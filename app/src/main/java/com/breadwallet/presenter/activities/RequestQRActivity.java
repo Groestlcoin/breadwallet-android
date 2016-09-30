@@ -72,7 +72,7 @@ public class RequestQRActivity extends Activity {
 //        Log.e(TAG, "requestAddrs: " + "|" + requestAddrs + "|");
 //        Log.e(TAG, "requestAmount: " + "|" + requestAmount + "|");
 
-        String finalAddress = "bitcoin:" + requestAddrs + "?amount=" + requestAmount;
+        String finalAddress = "groestlcoin:" + requestAddrs + "?amount=" + requestAmount;
         qrcode = (ImageView) findViewById(R.id.request_image_qr_code);
         close = (Button) findViewById(R.id.request_close);
         TextView requestAmountText = (TextView) findViewById(R.id.request_amount_text);

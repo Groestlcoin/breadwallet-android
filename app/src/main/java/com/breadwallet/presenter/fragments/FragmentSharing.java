@@ -94,7 +94,7 @@ public class FragmentSharing extends DialogFragment {
                     Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
                             "mailto", "", null));
                     emailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.bitcoin_address));
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "bitcoin:" + theAddress);
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "groestlcoin:" + theAddress);
                     Uri uri = Uri.parse("file://" + MainFragmentQR.qrCodeImageFile.getAbsolutePath());
 //                    Log.e(TAG, "The qrCodeImageFile.getAbsolutePath(): " + MainFragmentQR.qrCodeImageFile.getAbsolutePath());
                     if (uri != null)
@@ -112,7 +112,7 @@ public class FragmentSharing extends DialogFragment {
                     if (theAddress == null || theAddress.isEmpty()) return;
                     Intent sendIntent = new Intent(Intent.ACTION_VIEW);
                     sendIntent.setData(Uri.parse("sms:"));
-                    sendIntent.putExtra("sms_body", "bitcoin:" + theAddress);
+                    sendIntent.putExtra("sms_body", "groestlcoin:" + theAddress);
                     sendIntent.putExtra("exit_on_sent", true);
                     startActivity(sendIntent);
                     getDialog().cancel();

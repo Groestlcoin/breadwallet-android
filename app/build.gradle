@@ -7,7 +7,7 @@ model {
 
         defaultConfig {
             testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
-            applicationId = 'com.breadwallet'
+            applicationId = 'hashengineering.groestlcoin.groestlwallet'
             minSdkVersion.apiLevel = 23
             targetSdkVersion.apiLevel = 24
             versionCode = 26
@@ -25,9 +25,10 @@ model {
                            '-Wunused-label', '-Wno-unused-parameter', '-Wunused-variable', '-Wunused-value', '-Wempty-body',
                            '-Wconditional-uninitialized', '-Wno-unknown-pragmas', '-pedantic', '-Wshadow', '-Wfour-char-constants',
                            '-Wno-conversion', '-Wconstant-conversion', '-Wint-conversion', '-Wbool-conversion ', '-Wenum-conversion',
-                           '-Wassign-enum', '-Wno-shorten-64-to-32', '-Wpointer-sign', '-Wnewline-eof', '-Wdeprecated-declarations', '-Wno-sign-conversion'])
+                           '-Wassign-enum', '-Wno-shorten-64-to-32', '-Wpointer-sign', '-Wnewline-eof', '-Wdeprecated-declarations', '-Wno-sign-conversion', '-DBITCOIN_TEST_NO_MAIN'])
             ldLibs.addAll(['android', 'log'])
             stl = 'gnustl_static'
+            //stl = 'stlport_static'
         }
 
         lintOptions.with {
@@ -58,7 +59,7 @@ model {
                 debuggable = true
                 minifyEnabled = false
                 ndk {
-                    CFlags.addAll(['-DBITCOIN_TESTNET=1'])
+                    //CFlags.addAll(['-DBITCOIN_TESTNET=1'])
                     minifyEnabled = false
                     debuggable = true
                 }

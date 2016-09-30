@@ -1,10 +1,10 @@
 <resources>
     <!-- no need -->
-    <string name="app_name">&#384;readwallet</string>
+    <string name="app_name">groestlwallet</string>
     <!-- no need -->
     <string name="lang">en</string>
     <!-- android -->
-    <string name="bitcoin_address">Bitcoin Address</string>
+    <string name="bitcoin_address">Groestlcoin Address</string>
     <!-- android -->
     <string name="fingerprint_description">confirm fingerprint</string>
     <!-- android -->
@@ -14,9 +14,9 @@
     <!-- android -->
     <string name="fingerprint_success">fingerprint recognized</string>
     <!-- android -->
-    <string name="fragmentdecoder_not_valid_bitcoin_address">not a valid bitcoin address</string>
+    <string name="fragmentdecoder_not_valid_bitcoin_address">not a valid Groestlcoin address</string>
     <!-- android -->
-    <string name="fragmentdecoder_not_a_bitcoin_qr_code">not a bitcoin QR code</string>
+    <string name="fragmentdecoder_not_a_bitcoin_qr_code">not a Groestlcoin QR code</string>
     <!-- android -->
     <string name="error">error</string>
     <!-- android -->
@@ -26,7 +26,7 @@
     <!-- android -->
     <string name="fingerprint_auth">fingerprint authorization</string>
     <!-- android -->
-    <string name="rooted_message">On a \'rooted\' device, any app can access any other app\'s keystore data (and steal your bitcoins).%s</string>
+    <string name="rooted_message">On a \'rooted\' device, any app can access any other app\'s keystore data (and steal your Groestlcoins).%s</string>
     <!-- android -->
     <string name="rooted_message_holder1">\nWipe this wallet immediately and restore on a secure device.</string>
     <!-- android -->
@@ -52,13 +52,13 @@
     <!-- android -->
     <string name="invalid_request">Invalid request</string>
     <!-- android -->
-    <string name="allow_camera_access">allow camera access in \"Settings\" > \"Apps\" > \"breadwallet\" > \"Permissions\"</string>
+    <string name="allow_camera_access">allow camera access in \"Settings\" > \"Apps\" > \"groestlwallet\" > \"Permissions\"</string>
     <!-- android -->
     <string name="insecure_keyboard_message">Insecure keyboard detected\ngo to \"Settings\" > \"language &amp; input\" > \"keyboards\" and disable all custom input types</string>
     <!-- android -->
     <string name="choose_an_email_client">Choose an Email client</string>
     <!-- android -->
-    <string name="phrase_error">Recovery phrase error, please contact support at breadwallet.com</string>
+    <string name="phrase_error">Recovery phrase error, please contact support at groestlwallet.com</string>
     <!-- android -->
     <string name="recover_button">recover</string>
     <!-- android -->
@@ -66,13 +66,13 @@
     <!-- android -->
     <string name="refresh">refresh</string>
     <!-- android -->
-    <string name="breadwallet_v">breadwallet %1$d</string>
+    <string name="breadwallet_v">groestlwallet %1$d</string>
     <!-- android -->
-    <string name="copyright_u00a9_2016_breadwallet_llc">copyright © 2016 breadwallet llc</string>
+    <string name="copyright_u00a9_2016_breadwallet_llc">copyright © 2016 breadwallet llc. © 2016 hash engineering solutions</string>
     <!-- android -->
     <string name="app_support">app support:</string>
     <!-- android -->
-    <string name="support_website">support@breadwallet.com</string>
+    <string name="support_website">hashengineeringsolutions@gmail.com</string>
     <!-- android -->
     <string name="exchange_rate_data_provided_by">exchange rate data provided by</string>
     <!-- android -->
@@ -90,12 +90,12 @@
     <!-- checked -->
     <string name="dialog_recovery_phrase_warning">if you ever lose your phone, you will need this phrase to recover your wallet</string>
     <!-- checked -->
-    <string name="toast_qr_tip">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.</string>
+    <string name="toast_qr_tip">Let others scan this QR code to get your Groestlcoin address. Anyone can send Groestlcoins to your wallet by transferring them to your address.</string>
     <!-- checked -->
-    <string name="toast_address_tip">This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.</string>
+    <string name="toast_address_tip">This is your Groestlcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.</string>
     <string name="warning">WARNING</string>
     <!-- checked -->
-    <string name="warning_text1">\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n</string>
+    <string name="warning_text1">\nDO NOT let anyone see your recovery\nphrase or they can spend your Groestlcoins.\n</string>
     <!-- checked -->
     <string name="warning_text2">\nNEVER type your recovery phrase into\npassword managers or any software.</string>
     <!-- checked -->
@@ -103,15 +103,15 @@
     <!-- checked -->
     <string name="cancel">cancel</string>
     <!-- checked -->
-    <string name="mainfragment_clipboard_invalid_data">"clipboard doesn't contain a valid bitcoin address"</string>
+    <string name="mainfragment_clipboard_invalid_data">"clipboard doesn't contain a valid Groestlcoin address"</string>
     <!-- checked -->
     <string name="ok">ok</string>
     <!-- checked -->
     <string name="toast_address_copied">copied</string>
     <!-- checked -->
-    <string name="middle_view_tip_first">This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market.</string>
+    <string name="middle_view_tip_first">This is your Groestlcoin balance. Groestlcoin is a currency. The exchange rate changes with the market.</string>
     <!-- checked -->
-    <string name="middle_view_tip_second">%1$s is for \'bits\'. %2$s = 1 bitcoin.</string>
+    <string name="middle_view_tip_second">%1$s is for \'bits\'. %2$s = 1 Groestlcoin.</string>
     <!-- checked -->
     <string name="done">done</string>
     <!-- checked -->
@@ -147,11 +147,11 @@
     <!-- checked -->
     <string name="spent_address">spent address</string>
     <!-- checked -->
-    <string name="bitcoin_network_fee">bitcoin network fee</string>
+    <string name="bitcoin_network_fee">Groestlcoin network fee</string>
     <!-- checked -->
     <string name="pay_address_from_clipboard">pay address from clipboard</string>
     <!-- checked -->
-    <string name="could_not_transmit_payment">couldn\'t transmit payment to bitcoin network</string>
+    <string name="could_not_transmit_payment">couldn\'t transmit payment to Groestlcoin network</string>
     <!-- checked -->
     <string name="scan_qr_code">scan QR code</string>
     <!-- checked -->
@@ -171,13 +171,13 @@
     <!-- checked -->
     <string name="payment_failed">couldn\'t make payment</string>
     <!-- checked -->
-    <string name="address_already_used">\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn\'t directly control the address</string>
+    <string name="address_already_used">\nADDRESS ALREADY USED\n\nGroestlcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn\'t directly control the address</string>
     <!-- checked -->
     <string name="ignore">ignore</string>
     <!-- checked -->
     <string name="verified_waiting">verified, waiting for confirmation</string>
     <!-- checked -->
-    <string name="you_received_bitcoin">you received bitcoin!</string>
+    <string name="you_received_bitcoin">you received Groestlcoin!</string>
     <!-- checked -->
     <string name="write_down_phrase_holder1">next, write down your recovery phrase</string>
     <!-- checked -->
@@ -207,7 +207,7 @@
     <!-- checked -->
     <string name="pay">pay</string>
     <!-- checked -->
-    <string name="at_this_address">receive bitcoins at this address: %s</string>
+    <string name="at_this_address">receive Groestlcoins at this address: %s</string>
     <!-- checked -->
     <string name="generate_phrase_text1">start a new wallet by generating a wallet recovery phrase</string>
     <!-- checked -->
@@ -268,7 +268,7 @@
     <!-- checked -->
     <string name="password_protected_key">password protected key</string>
     <!-- checked -->
-    <string name="bitcoin_payment_cant_be_less">bitcoin payments can\'t be less than %s</string>
+    <string name="bitcoin_payment_cant_be_less">Groestlcoin payments can\'t be less than %s</string>
     <!-- checked -->
     <string name="amount_too_small">amount too small</string>
     <!-- checked -->
@@ -291,7 +291,7 @@
     <!-- checked -->
     <string name="could_not_sweep_the_balance">couldn\'t sweep balance</string>
     <!-- checked -->
-    <string name="send_money_from_privkey_message">Send %1$s (%2$s) from this private key into your wallet? The bitcoin network will receive a fee of %3$s (%4$s).</string>
+    <string name="send_money_from_privkey_message">Send %1$s (%2$s) from this private key into your wallet? The Groestlcoin network will receive a fee of %3$s (%4$s).</string>
     <!-- checked -->
     <string name="blocks">block #%1$d of %2$d</string>
     <!-- checked -->
@@ -307,17 +307,17 @@
     <!-- checked -->
     <string name="reduce_payment_amount_by">reduce payment amount by\n%1$s (%2$s)?</string>
     <!-- checked -->
-    <string name="insufficient_funds_for_fee">insufficient funds for bitcoin network fee</string>
+    <string name="insufficient_funds_for_fee">insufficient funds for Groestlcoin network fee</string>
     <!-- checked -->
-    <string name="not_connected_network">not connected to the bitcoin network</string>
+    <string name="not_connected_network">not connected to the Groestlcoin network</string>
     <!-- checked -->
     <string name="could_not_make_payment">couldn\'t make payment</string>
     <!-- checked -->
     <string name="payee_not_certified">payee identity isn\'t certified</string>
     <!-- checked -->
-    <string name="scan_qr_tip">Scan someone else\'s QR code to get their bitcoin address. You can send a payment to anyone with an address.</string>
+    <string name="scan_qr_tip">Scan someone else\'s QR code to get their Groestlcoin address. You can send a payment to anyone with an address.</string>
     <!-- checked -->
-    <string name="pay_address_tip">Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with \'1\' or \'3\'.</string>
+    <string name="pay_address_tip">Groestlcoin addresses can also be copied to the clipboard. A Groestlcoin address always starts with \'F\' or \'3\'.</string>
     <!-- checked -->
     <string name="not_a_recovery_phrase_word">\"%s\" is not a recovery phrase word</string>
     <!-- checked -->

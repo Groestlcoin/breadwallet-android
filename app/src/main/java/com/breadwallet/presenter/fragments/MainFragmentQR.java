@@ -84,7 +84,7 @@ public class MainFragmentQR extends Fragment {
         final RelativeLayout mainFragmentQr = (RelativeLayout) rootView.findViewById(R.id.main_fragment_qr);
         mainAddressText = (TextView) rootView.findViewById(R.id.main_address_text);
         addressLayout = (RelativeLayout) rootView.findViewById(R.id.theAddressLayout);
-        String bitcoinUrl = "bitcoin:" + receiveAddress;
+        String bitcoinUrl = "groestlcoin:" + receiveAddress;
         mainAddressText.setText(receiveAddress);
         BRWalletManager.getInstance(getActivity()).generateQR(bitcoinUrl, qrcode);
         fm = getActivity().getFragmentManager();
@@ -220,7 +220,7 @@ public class MainFragmentQR extends Fragment {
             receiveAddress = SharedPreferencesManager.getReceiveAddress(getActivity());
         }
 //        Log.e(TAG, "refreshAddress: receiveAddress: " + receiveAddress);
-        String bitcoinUrl = "bitcoin:" + receiveAddress;
+        String bitcoinUrl = "groestlcoin:" + receiveAddress;
         if(mainAddressText == null) return;
         mainAddressText.setText(receiveAddress);
         BRWalletManager.getInstance(getActivity()).generateQR(bitcoinUrl, qrcode);

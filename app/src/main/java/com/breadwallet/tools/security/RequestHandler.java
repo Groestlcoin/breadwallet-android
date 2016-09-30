@@ -107,10 +107,10 @@ public class RequestHandler {
         String tmp = str.trim().replaceAll("\n", "").replaceAll(" ", "%20");
         URI uri = URI.create(tmp);
 
-        if (uri.getScheme() == null || !uri.getScheme().equals("bitcoin")) {
-            tmp = "bitcoin://".concat(tmp);
+        if (uri.getScheme() == null || !uri.getScheme().equals("groestlcoin")) {
+            tmp = "groestlcoin://".concat(tmp);
         } else {
-            tmp = tmp.replace("bitcoin:", "bitcoin://");
+            tmp = tmp.replace("groestlcoin:", "groestlcoin://");
         }
         uri = URI.create(tmp);
 //        String[] parts = tmp.split("\\?", 2);

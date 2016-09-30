@@ -130,7 +130,7 @@ public class JsonParser {
                 stringId = app.getApplicationInfo().labelRes;
                 appName = app.getString(stringId);
             }
-            String message = String.format(Locale.getDefault(), "%s/%d/%s", appName.isEmpty() ? "breadwallet" : appName, versionNumber, System.getProperty("http.agent"));
+            String message = String.format(Locale.getDefault(), "%s/%d/%s", appName.isEmpty() ? "groestlwallet" : appName, versionNumber, System.getProperty("http.agent"));
             Log.e(TAG, "user agent: " + message);
             urlConn.setRequestProperty("User-agent", message);
             urlConn.setReadTimeout(60 * 1000);

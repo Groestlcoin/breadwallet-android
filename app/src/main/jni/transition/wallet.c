@@ -624,7 +624,6 @@ Java_com_breadwallet_wallet_BRWalletManager_getFirstAddress(JNIEnv *env, jobject
     BRMasterPubKey mpk = *(BRMasterPubKey *) pubKeyBytes;
     uint8_t pubKey[33];
     BRKey key;
-
     BRBIP32PubKey(pubKey, sizeof(pubKey), mpk, 0, 0);
     BRKeySetPubKey(&key, pubKey, sizeof(pubKey));
     BRKeyAddress(&key, address.s, sizeof(address));
