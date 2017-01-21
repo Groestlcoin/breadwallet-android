@@ -207,7 +207,7 @@ public class PasswordDialogFragment extends DialogFragment {
             currentMode = BRConstants.AUTH_MODE_NEW_PASS;
         }
         if (verifyOnly) {
-            title.setText(String.format(getResources().getString(R.string.enter_passcode), "\"" + BRConstants.bitcoinLowercase + "read\""));
+            title.setText(String.format(getResources().getString(R.string.enter_passcode), "\"" + "groestlwallet\""));
         }
 
         textWatcher = new TextWatcher() {
@@ -343,7 +343,7 @@ public class PasswordDialogFragment extends DialogFragment {
                 KeyStoreManager.putFailCount(0, getActivity());
                 getDialog().cancel();
                 long totalSpent = BRWalletManager.getInstance(getActivity()).getTotalSent();
-                long spendLimit = totalSpent + PassCodeManager.getInstance().getLimit(getActivity()) + (request == null ? 0 : request.amount);
+                long spendLimit = totalSpent + (long)PassCodeManager.getInstance().getLimit(getActivity())*BRConstants.factor + (request == null ? 0 : request.amount);
                 KeyStoreManager.putSpendLimit(spendLimit, getActivity());
                 Log.e(TAG, "Setting the new limit: " + spendLimit + ", totalSpent was: " + totalSpent);
 

@@ -80,12 +80,12 @@ public class FragmentSpendLimit extends Fragment {
         double rate = SharedPreferencesManager.getRate(getActivity());
 
         String alwaysPasscodeString = "always require passcode";
-        String limit100kString = String.format("%s    (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", BRConstants.limit1),
-                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf(BRConstants.limit1)), getActivity()));
-        String limit1BString = String.format("%s   (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", BRConstants.limit2),
-                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf(BRConstants.limit2)), getActivity()));
-        String limit10BString = String.format("%s  (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", BRConstants.limit3),
-                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf(BRConstants.limit3)),getActivity()));
+        String limit100kString = String.format("%s    (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", (long)BRConstants.limit1*BRConstants.factor),
+                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf((long)BRConstants.limit1*BRConstants.factor)), getActivity()));
+        String limit1BString = String.format("%s   (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", (long)BRConstants.limit2*BRConstants.factor),
+                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf((long)BRConstants.limit2*BRConstants.factor)), getActivity()));
+        String limit10BString = String.format("%s  (%s)", BRStringFormatter.getFormattedCurrencyString("BTC", (long)BRConstants.limit3*BRConstants.factor),
+                BRStringFormatter.getExchangeForAmount(rate, iso, new BigDecimal(String.valueOf((long)BRConstants.limit3*BRConstants.factor)),getActivity()));
 
         alwaysPasscodeText.setText(alwaysPasscodeString);
         limit100kText.setText(limit100kString);

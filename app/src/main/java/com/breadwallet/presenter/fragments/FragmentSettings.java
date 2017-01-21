@@ -89,7 +89,7 @@ public class FragmentSettings extends Fragment {
         RelativeLayout rescan = (RelativeLayout) rootView.findViewById(R.id.rescan_blockchain);
 
 
-        theLimit.setText(BRStringFormatter.getFormattedCurrencyString("BTC", PassCodeManager.getInstance().getLimit(getActivity())));
+        theLimit.setText(BRStringFormatter.getFormattedCurrencyString("BTC", (long)PassCodeManager.getInstance().getLimit(getActivity())*BRConstants.factor ));
         FingerprintManager mFingerprintManager;
         mFingerprintManager = (FingerprintManager) getActivity().getSystemService(Context.FINGERPRINT_SERVICE);
         boolean useFingerPrint;

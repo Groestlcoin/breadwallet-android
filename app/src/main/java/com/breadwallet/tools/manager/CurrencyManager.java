@@ -99,6 +99,8 @@ public class CurrencyManager extends Observable {
             try {
                 JSONArray arr;
                 arr = JsonParser.getJSonArray(context);
+                String grsTicker = JsonParser.getGRSTicker(context);
+
                 JsonParser.updateFeePerKb(context);
 //                Log.e(TAG, "JSONArray arr.length(): " + arr.length());
 
@@ -111,6 +113,7 @@ public class CurrencyManager extends Observable {
                         tmp.code = tmpObj.getString("code");
                         tmp.codeAndName = tmp.code + " - " + tmp.name;
                         tmp.rate = (float) tmpObj.getDouble("rate");
+                        tmp.rate = tmp.rate * (float)Double.parseDouble(grsTicker);
                         String selectedISO = SharedPreferencesManager.getIso(context);
 //                        Log.e(TAG,"selectedISO: " + selectedISO);
                         if (tmp.code.equalsIgnoreCase(selectedISO)) {
