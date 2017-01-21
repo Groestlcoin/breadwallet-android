@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.breadwallet.tools.util.BRConstants.DEFAULT_FEE_PER_KB;
+
 /**
  * BreadWallet
  * <p/>
@@ -68,6 +70,12 @@ public class JsonParser {
         return jsonArray == null ? getBackUpJSonArray(activity) : jsonArray;
     }
 
+    public static String getGRSTicker(Activity activity) {
+        String string = callURL("http://www.groestlcoin.org/grsticker.php");
+
+        return string;
+    }
+
     public static JSONArray getBackUpJSonArray(Activity activity) {
         String jsonString = callURL("https://bitpay.com/rates");
         //        System.out.println("\n\njsonString: " + jsonString);
@@ -89,20 +97,21 @@ public class JsonParser {
     }
 
     public static void updateFeePerKb(Activity activity) {
-        String jsonString = callURL("https://api.breadwallet.com/fee-per-kb");
+        //String jsonString = callURL("https://api.breadwallet.com/fee-per-kb");
         long fee;
-        try {
-            JSONObject obj = new JSONObject(jsonString);
-            fee = obj.getLong("fee_per_kb");
+        //try {
+            //JSONObject obj = new JSONObject(jsonString);
+            //fee = obj.getLong("fee_per_kb");
+            fee = DEFAULT_FEE_PER_KB;
             if (fee != 0 && fee < BRConstants.MAX_FEE_PER_KB) {
 
                 SharedPreferencesManager.putFeePerKb(activity, fee);
                 BRWalletManager.getInstance(activity).setFeePerKb(fee);
                 Log.e(TAG, "fee set to: " + fee);
             }
-        } catch (JSONException e) {
+        /*} catch (JSONException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private static String callURL(String myURL) {
