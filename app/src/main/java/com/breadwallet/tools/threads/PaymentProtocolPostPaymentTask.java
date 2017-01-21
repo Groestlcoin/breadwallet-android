@@ -74,8 +74,8 @@ public class PaymentProtocolPostPaymentTask extends AsyncTask<String, String, St
             Log.e(TAG, "the uri: " + paymentRequest.paymentURL);
             URL url = new URL(paymentRequest.paymentURL);
             urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestProperty("Content-Type", "application/bitcoin-payment");
-            urlConnection.addRequestProperty("Accept", "application/bitcoin-paymentack");
+            urlConnection.setRequestProperty("Content-Type", "application/groestlcoin-payment");
+            urlConnection.addRequestProperty("Accept", "application/groestlcoin-paymentack");
             urlConnection.setConnectTimeout(3000);
             urlConnection.setReadTimeout(3000);
             urlConnection.setRequestMethod("POST");

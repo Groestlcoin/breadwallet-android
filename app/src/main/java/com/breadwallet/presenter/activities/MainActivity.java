@@ -183,12 +183,12 @@ public class MainActivity extends FragmentActivity implements Observer {
         Uri data = intent.getData();
         if (data == null) return;
         String scheme = data.getScheme();
-        if (scheme != null && scheme.startsWith("bitcoin")) {
-            Log.e(TAG, "bitcoin url");
+        if (scheme != null && scheme.startsWith("groestlcoin")) {
+            Log.e(TAG, "groestlcoin url");
             String str = intent.getDataString();
             RequestHandler.processRequest(this, str);
         } else {
-            Log.e(TAG, "No bitcoin url");
+            Log.e(TAG, "No groestlcoin url");
         }
     }
 
@@ -554,7 +554,7 @@ public class MainActivity extends FragmentActivity implements Observer {
         String tempAmount = FragmentScanResult.currentCurrencyPosition == BRConstants.BITCOIN_RIGHT ?
                 AmountAdapter.getRightValue() : AmountAdapter.getLeftValue();
         BRWalletManager m = BRWalletManager.getInstance(this);
-        int unit = BRConstants.CURRENT_UNIT_BITS;
+        int unit = BRConstants.CURRENT_UNIT_BITCOINS;//BRConstants.CURRENT_UNIT_BITS;
         Activity context = MainActivity.app;
         String divideBy = "100";
         if (context != null)
