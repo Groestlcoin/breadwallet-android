@@ -430,7 +430,7 @@ public class MainActivity extends FragmentActivity implements Observer {
         middleBubble1 = (BubbleTextView) findViewById(R.id.middle_bubble_tip1);
         middleBubble2 = (BubbleTextView) findViewById(R.id.middle_bubble_tip2);
         middleBubble2.setText(String.format(getString(R.string.middle_view_tip_second),
-                BRConstants.bitcoinLowercase, BRConstants.bitcoinLowercase + "1,000,000"));
+                BRConstants.bitcoinUppercase, BRConstants.bitcoinUppercase + "1"));
 
         middleBubbleBlocks = (BubbleTextView) findViewById(R.id.middle_bubble_blocks);
         qrBubble1 = (BubbleTextView) findViewById(R.id.qr_bubble1);

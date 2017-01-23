@@ -111,7 +111,7 @@
     <!-- checked -->
     <string name="middle_view_tip_first">This is your groestlcoin balance. groestlcoin is a currency. The exchange rate changes with the market.</string>
     <!-- checked -->
-    <string name="middle_view_tip_second">%1$s is for \'bits\'. %2$s = 1 groestlcoin.</string>
+    <string name="middle_view_tip_second">%1$s is for \'grs\'. %2$s = 1 groestlcoin.</string>
     <!-- checked -->
     <string name="done">done</string>
     <!-- checked -->
