@@ -15,6 +15,8 @@ import com.breadwallet.presenter.activities.MainActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -95,13 +97,13 @@ public class Utils {
         Log.e(specsTag, "");
     }
 
-    public static boolean isEmulatorOrDebug() {
+    public static boolean isEmulatorOrDebug(Activity app) {
         String fing = Build.FINGERPRINT;
         boolean isEmulator = false;
         if (fing != null) {
             isEmulator = fing.contains("vbox") || fing.contains("generic");
         }
-        return isEmulator;
+        return isEmulator || (0 != (app.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
     }
 
     public static String getFormattedDateFromLong(long time) {
@@ -122,8 +124,28 @@ public class Utils {
         return result;
     }
 
+    public static boolean isNullOrEmpty(String str){
+        return str == null || str.isEmpty();
+    }
+
+    public static boolean isNullOrEmpty(byte[] arr){
+        return arr == null || arr.length == 0;
+    }
+
+    public static boolean isNullOrEmpty(Collection collection) {
+        return collection == null || collection.size() == 0;
+    }
+
     public static int getPixelsFromDps(Context context, int dps){
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dps * scale + 0.5f);
+    }
+
+    public static String bytesToHex(byte[] in) {
+        final StringBuilder builder = new StringBuilder();
+        for (byte b : in) {
+            builder.append(String.format("%02x", b));
+        }
+        return builder.toString();
     }
 }

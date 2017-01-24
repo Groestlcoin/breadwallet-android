@@ -2,20 +2,20 @@ package com.breadwallet.presenter.fragments;
 
 /**
  * BreadWallet
- * <p>
+ * <p/>
  * Created by Mihail Gutan <mihail@breadwallet.com> on 7/24/15.
  * Copyright (c) 2016 breadwallet LLC
- * <p>
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ * <p/>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * <p>
+ * <p/>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,10 +28,12 @@ package com.breadwallet.presenter.fragments;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.security.keystore.UserNotAuthenticatedException;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -47,8 +49,10 @@ import android.widget.TextView;
 
 import com.breadwallet.R;
 import com.breadwallet.BreadWalletApp;
+import com.breadwallet.exceptions.BRKeystoreErrorException;
 import com.breadwallet.presenter.activities.IntroActivity;
 import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.presenter.activities.PhraseFlowActivity;
 import com.breadwallet.presenter.entities.PaymentRequestEntity;
 import com.breadwallet.presenter.entities.PaymentRequestWrapper;
 import com.breadwallet.tools.animation.BRAnimator;
@@ -57,7 +61,6 @@ import com.breadwallet.tools.security.PostAuthenticationProcessor;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.util.BRStringFormatter;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
-import com.breadwallet.tools.adapter.CustomPagerAdapter;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
 import com.breadwallet.tools.animation.SpringAnimator;
 import com.breadwallet.tools.security.KeyStoreManager;
@@ -66,6 +69,8 @@ import com.breadwallet.tools.threads.PaymentProtocolPostPaymentTask;
 import com.breadwallet.wallet.BRWalletManager;
 
 import java.util.Locale;
+
+import static com.breadwallet.tools.security.KeyStoreManager.putLastPasscodeUsedTime;
 
 public class PasswordDialogFragment extends DialogFragment {
 
@@ -92,6 +97,7 @@ public class PasswordDialogFragment extends DialogFragment {
     private String prevPass;
     private String message;
     private TextView description;
+    private boolean forceDialogStayOn;
 
     private int mode = -1;
 
@@ -103,9 +109,27 @@ public class PasswordDialogFragment extends DialogFragment {
     }
 
     @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        Activity app = getActivity();
+        if(app ==  null) return;
+        long passTime = 0;
+        passTime = KeyStoreManager.getLastPasscodeUsedTime(app);
+        if (forceDialogStayOn && (passTime + BRConstants.PASS_CODE_TIME_LIMIT <= System.currentTimeMillis())) {
+            ((BreadWalletApp) app.getApplication()).promptForAuthentication(app, mode, request, message, title.getText().toString(), paymentRequest, forceDialogStayOn);
+        }
+    }
+
+    @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_password_dialog, container);
+        String pass = KeyStoreManager.getPassCode(getActivity());
+        if (pass == null || pass.length() != 4) {
+            firstTime = true;
+            verifyOnly = false;
+            forceDialogStayOn = true;
+        }
         dialogFragment = this;
         passcodeEditText = (EditText) view.findViewById(R.id.edit_passcode);
         phraseEditText = (EditText) view.findViewById(R.id.edit_phrase);
@@ -120,7 +144,6 @@ public class PasswordDialogFragment extends DialogFragment {
         digit_3 = (TextView) view.findViewById(R.id.passcode_digit3);
         digit_4 = (TextView) view.findViewById(R.id.passcode_digit4);
 
-
         prevPass = "";
 
         clearDigits();
@@ -129,7 +152,7 @@ public class PasswordDialogFragment extends DialogFragment {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getDialog().cancel();
+                getDialog().dismiss();
                 passcodeEditText.setText("");
                 keyboard.hideSoftInputFromWindow(cancel.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
                 if (!BRAnimator.scanResultFragmentOn && mode == BRConstants.AUTH_FOR_PAY && request.isAmountRequested) {
@@ -143,7 +166,7 @@ public class PasswordDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if (phraseEditText == null) return;
-                (new Handler()).postDelayed(new Runnable() {
+                new Handler().postDelayed(new Runnable() {
 
                     public void run() {
                         phraseEditText.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0, 0, 0));
@@ -206,6 +229,12 @@ public class PasswordDialogFragment extends DialogFragment {
             title.setText(R.string.choose_new_passcode);
             currentMode = BRConstants.AUTH_MODE_NEW_PASS;
         }
+        long passTime = KeyStoreManager.getLastPasscodeUsedTime(getActivity());
+        if (passTime + BRConstants.PASS_CODE_TIME_LIMIT <= System.currentTimeMillis()) {
+            cancel.setClickable(false);
+            cancel.setVisibility(View.GONE);
+            forceDialogStayOn = true;
+        }
         if (verifyOnly) {
             title.setText(String.format(getResources().getString(R.string.enter_passcode), "\"" + "groestlwallet\""));
         }
@@ -231,7 +260,7 @@ public class PasswordDialogFragment extends DialogFragment {
 
         getDialog().setCanceledOnTouchOutside(false);
 
-        (new Handler()).postDelayed(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
 
             public void run() {
                 passcodeEditText.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0, 0, 0));
@@ -246,35 +275,19 @@ public class PasswordDialogFragment extends DialogFragment {
     public void onResume() {
         super.onResume();
         passcodeEditText.setText("");
-        final Activity app = getActivity();
-        if (app != null) {
-            passcodeEditText.post(
-                    new Runnable() {
-                        public void run() {
-                            InputMethodManager inputMethodManager = (InputMethodManager) app.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            inputMethodManager.toggleSoftInputFromWindow(passcodeEditText.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
-                            passcodeEditText.requestFocus();
-                        }
-                    });
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        InputMethodManager keyboard = (InputMethodManager) getActivity().
-                getSystemService(Context.INPUT_METHOD_SERVICE);
-        EditText editText = CustomPagerAdapter.adapter.
-                mainFragment.addressEditText;
-        if (CustomPagerAdapter.adapter != null && editText != null)
-            keyboard.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(passcodeEditText.getWindowToken(), 0);
+        }
     }
 
-    public void setFirstTimeTrue() {
-        firstTime = true;
-        verifyOnly = false;
-    }
 
     public void setVerifyOnlyTrue() {
         verifyOnly = true;
@@ -339,13 +352,19 @@ public class PasswordDialogFragment extends DialogFragment {
             prevPass = s.toString();
             if (KeyStoreManager.getFailCount(getActivity()) >= 3) setWalletDisabled();
             if (passCodeManager.checkAuth(s.toString(), getActivity())) {
+                InputMethodManager inputManager =
+                        (InputMethodManager) getActivity().
+                                getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.hideSoftInputFromWindow(
+                        passcodeEditText.getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
                 //reset the passcode after successful attempt
                 KeyStoreManager.putFailCount(0, getActivity());
-                getDialog().cancel();
+                putLastPasscodeUsedTime(System.currentTimeMillis(), getActivity());
+                getDialog().dismiss();
                 long totalSpent = BRWalletManager.getInstance(getActivity()).getTotalSent();
                 long spendLimit = totalSpent + (long)PassCodeManager.getInstance().getLimit(getActivity())*BRConstants.factor + (request == null ? 0 : request.amount);
                 KeyStoreManager.putSpendLimit(spendLimit, getActivity());
-                Log.e(TAG, "Setting the new limit: " + spendLimit + ", totalSpent was: " + totalSpent);
 
                 ((BreadWalletApp) getActivity().getApplicationContext()).setUnlocked(true);
                 FragmentSettingsAll.refreshUI();
@@ -353,13 +372,19 @@ public class PasswordDialogFragment extends DialogFragment {
                 ((BreadWalletApp) getActivity().getApplicationContext()).allowKeyStoreAccessForSeconds();
                 getDialog().dismiss();
                 passcodeEditText.setText("");
-                Log.e(TAG, "mode: " + mode + " request: " + request);
                 if (mode == BRConstants.AUTH_FOR_PHRASE) {
-                    BRWalletManager.getInstance(getActivity()).animateSavePhraseFlow();
+                    PhraseFlowActivity app = ((PhraseFlowActivity) getActivity());
+                    if (SharedPreferencesManager.getPhraseWroteDown(app)) {
+                        app.animateSlide(app.fragmentPhraseFlow1, app.fragmentRecoveryPhrase, IntroActivity.RIGHT);
+                        app.fragmentRecoveryPhrase.setPhrase(FragmentPhraseFlow1.phrase);
+                    } else {
+                        app.animateSlide(app.fragmentPhraseFlow1, app.fragmentPhraseFlow2, IntroActivity.RIGHT);
+                        app.fragmentPhraseFlow2.setPhrase(FragmentPhraseFlow1.phrase);
+                    }
                 } else if (mode == BRConstants.AUTH_FOR_LIMIT) {
                     BRAnimator.animateSlideToLeft((MainActivity) getActivity(), new FragmentSpendLimit(), new FragmentSettings());
                 } else if (mode == BRConstants.AUTH_FOR_PAY && request != null) {
-                    PostAuthenticationProcessor.getInstance().onPublishTxAuth((MainActivity) getActivity());
+                    PostAuthenticationProcessor.getInstance().onPublishTxAuth((MainActivity) getActivity(),false);
                 } else if (mode == BRConstants.AUTH_FOR_PAYMENT_PROTOCOL && paymentRequest != null) {
                     if (paymentRequest.paymentURL == null || paymentRequest.paymentURL.isEmpty())
                         return false;
@@ -409,7 +434,7 @@ public class PasswordDialogFragment extends DialogFragment {
                     if (passToCheck.equals(tempPassToChange)) {
                         passCodeManager.setPassCode(tempPassToChange, getActivity());
                         tempPassToChange = "";
-                        getDialog().cancel();
+                        getDialog().dismiss();
                         String tmp = BRStringFormatter.getCurrentBalanceText(getActivity());
                         MiddleViewAdapter.resetMiddleView(getActivity(), tmp);
                         ((BreadWalletApp) getActivity().getApplicationContext()).setUnlocked(true);
@@ -440,7 +465,7 @@ public class PasswordDialogFragment extends DialogFragment {
         int attemptsRemaining = 8 - failCount;
         if (attemptsRemaining <= 0) {
             BRWalletManager m = BRWalletManager.getInstance(getActivity());
-            m.wipeKeyStore();
+            m.wipeKeyStore(getActivity());
             m.wipeWalletButKeystore(getActivity());
             startIntroActivity();
             BRAnimator.resetFragmentAnimator();
@@ -463,7 +488,7 @@ public class PasswordDialogFragment extends DialogFragment {
         passcodeEditText.setVisibility(View.GONE);
         info.setVisibility(View.VISIBLE);
         // Get the Resources
-        String message = String.format(getString(R.string.try_again), (int) (waitTime == 0 ? 1 : waitTime),
+        String message = String.format(getString(R.string.try_again), (int) (((int) waitTime) == 0 ? 1 : waitTime),
                 (waitTime == 1 ? getString(R.string.minute) : getString(R.string.minutes)));
 
         info.setText(message);

@@ -61,4 +61,9 @@ gradle.properties
 obj/
 crash.txt
 projectFilesBackup/
-
+/captures/
+/projectFilesBackup/
+/publishTODO.txt
+.idea/copyright/
+/app/google-services.json
+/.idea/markdown-navigator/

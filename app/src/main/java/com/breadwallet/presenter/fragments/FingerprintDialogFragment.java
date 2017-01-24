@@ -33,10 +33,13 @@ import android.widget.Toast;
 
 import com.breadwallet.R;
 import com.breadwallet.BreadWalletApp;
+import com.breadwallet.presenter.activities.IntroActivity;
 import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.presenter.activities.PhraseFlowActivity;
 import com.breadwallet.presenter.entities.PaymentRequestEntity;
 import com.breadwallet.presenter.entities.PaymentRequestWrapper;
 import com.breadwallet.tools.animation.BRAnimator;
+import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.security.PostAuthenticationProcessor;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
@@ -140,7 +143,8 @@ public class FingerprintDialogFragment extends DialogFragment
     private void goToBackup() {
 
         // Fingerprint is not used anymore. Stop listening for it.
-        getDialog().cancel();
+        if (getDialog() != null)
+            getDialog().cancel();
         PasswordDialogFragment passwordDialogFragment = new PasswordDialogFragment();
         passwordDialogFragment.setMode(mode);
         passwordDialogFragment.setPaymentRequestEntity(request, paymentRequest);
@@ -164,9 +168,16 @@ public class FingerprintDialogFragment extends DialogFragment
         ((BreadWalletApp) getActivity().getApplicationContext()).allowKeyStoreAccessForSeconds();
         getDialog().dismiss();
         if (mode == BRConstants.AUTH_FOR_PHRASE) {
-            BRWalletManager.getInstance(getActivity()).animateSavePhraseFlow();
+            PhraseFlowActivity app = ((PhraseFlowActivity) getActivity());
+            if (SharedPreferencesManager.getPhraseWroteDown(app)) {
+                app.animateSlide(app.fragmentPhraseFlow1, app.fragmentRecoveryPhrase, IntroActivity.RIGHT);
+                app.fragmentRecoveryPhrase.setPhrase(FragmentPhraseFlow1.phrase);
+            } else {
+                app.animateSlide(app.fragmentPhraseFlow1, app.fragmentPhraseFlow2, IntroActivity.RIGHT);
+                app.fragmentPhraseFlow2.setPhrase(FragmentPhraseFlow1.phrase);
+            }
         } else if (mode == BRConstants.AUTH_FOR_PAY && request != null) {
-            PostAuthenticationProcessor.getInstance().onPublishTxAuth((MainActivity) getActivity());
+            PostAuthenticationProcessor.getInstance().onPublishTxAuth((MainActivity) getActivity(),false);
         } else if (mode == BRConstants.AUTH_FOR_PAYMENT_PROTOCOL && paymentRequest != null) {
             if (paymentRequest.paymentURL == null || paymentRequest.paymentURL.isEmpty()) return;
             new PaymentProtocolPostPaymentTask(paymentRequest).execute();

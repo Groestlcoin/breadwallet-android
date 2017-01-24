@@ -10,21 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.breadwallet.BreadWalletApp;
-import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
 import com.breadwallet.presenter.activities.IntroActivity;
-import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.presenter.activities.PhraseFlowActivity;
-import com.breadwallet.tools.manager.BRClipboardManager;
-import com.breadwallet.tools.manager.SharedPreferencesManager;
-
-import java.util.Arrays;
 
 /**
  * BreadWallet
@@ -82,6 +72,9 @@ public class FragmentPhraseFlow2 extends Fragment {
     }
 
     public void setPhrase(final byte[] phrase) {
+        if(phrase.length == 0) {
+            throw new RuntimeException("phrase is empty what??");
+        }
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -104,7 +97,7 @@ public class FragmentPhraseFlow2 extends Fragment {
                     }
                 });
             }
-        },50);
+        }, 50);
 
     }
 

@@ -1,7 +1,6 @@
 package com.breadwallet;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
 import android.app.KeyguardManager;
@@ -12,7 +11,6 @@ import android.graphics.Point;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -31,15 +29,14 @@ import com.breadwallet.presenter.activities.IntroActivity;
 import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.presenter.entities.PaymentRequestEntity;
 import com.breadwallet.presenter.entities.PaymentRequestWrapper;
-import com.breadwallet.presenter.entities.TransactionListItem;
 import com.breadwallet.presenter.fragments.FingerprintDialogFragment;
-import com.breadwallet.presenter.fragments.FragmentSettingsAll;
 import com.breadwallet.presenter.fragments.PasswordDialogFragment;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
-import com.breadwallet.tools.adapter.TransactionListAdapter;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.security.KeyStoreManager;
 import com.breadwallet.wallet.BRWalletManager;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * BreadWallet
@@ -76,9 +73,11 @@ public class BreadWalletApp extends Application {
     public static int DISPLAY_HEIGHT_PX;
     FingerprintManager mFingerprintManager;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
+
         WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
@@ -125,7 +124,6 @@ public class BreadWalletApp extends Application {
 
     public void cancelToast() {
         if (toast != null) {
-            Log.e(TAG, "Toast canceled");
             toast.cancel();
         }
     }
@@ -136,6 +134,7 @@ public class BreadWalletApp extends Application {
 
     public void setTopMiddleView(int view, String text) {
         MainActivity app = MainActivity.app;
+        if(app == null) return;
         switch (view) {
             case BRConstants.BREAD_WALLET_IMAGE:
                 if (app.viewFlipper.getDisplayedChild() == 1) {
@@ -180,17 +179,13 @@ public class BreadWalletApp extends Application {
                 }
                 break;
         }
-        Log.e(TAG, "app.lockerPayFlipper: " + app.lockerPayFlipper.getDisplayedChild());
 
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-    public void promptForAuthentication(Activity context, int mode, PaymentRequestEntity requestEntity, String message, String title, PaymentRequestWrapper paymentRequest) {
+    public void promptForAuthentication(Activity context, int mode, PaymentRequestEntity requestEntity, String message, String title, PaymentRequestWrapper paymentRequest, boolean forcePasscode) {
         Log.e(TAG, "promptForAuthentication: " + mode);
         if (context == null) return;
         KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Activity.KEYGUARD_SERVICE);
-        Log.e(TAG, "Fingerpring: " + mFingerprintManager.isHardwareDetected());
-        Log.e(TAG, "Fingerpring enrolled: " + mFingerprintManager.hasEnrolledFingerprints());
 
         boolean useFingerPrint = ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) ==
                 PackageManager.PERMISSION_GRANTED && mFingerprintManager.isHardwareDetected() && mFingerprintManager.hasEnrolledFingerprints();
@@ -211,6 +206,11 @@ public class BreadWalletApp extends Application {
         if (KeyStoreManager.getFailCount(context) != 0) {
             useFingerPrint = false;
         }
+        long passTime = KeyStoreManager.getLastPasscodeUsedTime(context);
+        if (passTime + TimeUnit.MILLISECONDS.convert(2, TimeUnit.DAYS) <= System.currentTimeMillis()) {
+            useFingerPrint = false;
+        }
+        if (forcePasscode) useFingerPrint = false;
 
         if (keyguardManager.isKeyguardSecure()) {
             if (useFingerPrint) {
@@ -220,14 +220,16 @@ public class BreadWalletApp extends Application {
                 fingerprintDialogFragment.setPaymentRequestEntity(requestEntity, paymentRequest);
                 fingerprintDialogFragment.setMessage(message);
                 fingerprintDialogFragment.setTitle(message != null ? "" : title);
-                fingerprintDialogFragment.show(context.getFragmentManager(), FingerprintDialogFragment.class.getName());
+                if (!context.isDestroyed())
+                    fingerprintDialogFragment.show(context.getFragmentManager(), FingerprintDialogFragment.class.getName());
             } else {
                 PasswordDialogFragment passwordDialogFragment = new PasswordDialogFragment();
                 passwordDialogFragment.setMode(mode);
                 passwordDialogFragment.setPaymentRequestEntity(requestEntity, paymentRequest);
                 passwordDialogFragment.setVerifyOnlyTrue();
                 passwordDialogFragment.setMessage(message);
-                passwordDialogFragment.show(context.getFragmentManager(), PasswordDialogFragment.class.getName());
+                if (!context.isDestroyed())
+                    passwordDialogFragment.show(context.getFragmentManager(), PasswordDialogFragment.class.getName());
             }
         } else {
             showDeviceNotSecuredWarning(context);
@@ -256,13 +258,17 @@ public class BreadWalletApp extends Application {
 
 
     public void showCustomDialog(final String title, final String message, final String buttonText) {
-        Log.e(TAG, "Showing a dialog!");
-        final MainActivity app = MainActivity.app;
-        if (app == null) return;
+        Activity app = MainActivity.app;
+        if (app == null) app = IntroActivity.app;
+        if (app == null) {
+            Log.e(TAG, "showCustomDialog: FAILED, context is null");
+            return;
+        }
+        final Activity finalApp = app;
         app.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                new android.app.AlertDialog.Builder(app)
+                new android.app.AlertDialog.Builder(finalApp)
                         .setTitle(title)
                         .setMessage(message)
                         .setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
@@ -283,7 +289,6 @@ public class BreadWalletApp extends Application {
             app.lockerButton.setVisibility(b ? View.GONE : View.VISIBLE);
             app.lockerButton.setClickable(!b);
             MiddleViewAdapter.resetMiddleView(app, null);
-
         }
     }
 
@@ -307,14 +312,19 @@ public class BreadWalletApp extends Application {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 Log.e(TAG, "keyboard hidden");
+                return;
             }
         }
+        Log.e(TAG, "hideKeyboard: FAILED");
     }
 
-    public boolean isNetworkAvailable(Activity context) {
-        if (context == null) return false;
+    public boolean hasInternetAccess() {
+        return isNetworkAvailable();
+    }
+
+    private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
-                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }

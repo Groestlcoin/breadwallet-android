@@ -3,8 +3,11 @@ package com.breadwallet.presenter.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ClipboardManager;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +25,9 @@ import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
+import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.BRWalletManager;
+import com.google.firebase.crash.FirebaseCrash;
 
 import java.util.Arrays;
 
@@ -54,20 +59,14 @@ import java.util.Arrays;
 public class FragmentRecoveryPhrase extends Fragment {
     public static final String TAG = FragmentRecoveryPhrase.class.getName();
     private TextView thePhrase;
-    private ImageView checkBox;
-    private boolean checked = false;
     private byte[] phrase;
-    private RelativeLayout checkBoxlayout;
-    private Button backButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(
                 R.layout.fragment_recovery_phrase, container, false);
         thePhrase = (TextView) rootView.findViewById(R.id.the_phrase);
-        checkBox = (ImageView) rootView.findViewById(R.id.write_down_check_box);
-        checkBoxlayout = (RelativeLayout) rootView.findViewById(R.id.write_down_notice_layout);
-        backButton = (Button) rootView.findViewById(R.id.back_button);
+        Button backButton = (Button) rootView.findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -96,35 +95,21 @@ public class FragmentRecoveryPhrase extends Fragment {
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
-    private void setCheckBoxImage() {
-        checkBox.setImageResource(!checked ? R.drawable.checkbox_checked : R.drawable.checkbox_empty);
-        checked = !checked;
-    }
-
     public void setPhrase(byte[] phrase) {
+        if (phrase == null) return;
         this.phrase = phrase;
-        boolean phraseWroteDown = SharedPreferencesManager.getPhraseWroteDown(getActivity());
 
-        if (BuildConfig.DEBUG) {
-            thePhrase.setOnClickListener(new View.OnClickListener() {
+        if (Utils.isEmulatorOrDebug(getActivity())) {
+            new Handler().postDelayed(new Runnable() {
                 @Override
-                public void onClick(View v) {
-                    BRClipboardManager.copyToClipboard(getActivity(), thePhrase.getText().toString());
-                    ((BreadWalletApp) getActivity().getApplication()).showCustomToast(getActivity(),
-                            getActivity().getString(R.string.copied), 300, Toast.LENGTH_SHORT, 0);
+                public void run() {
+                    if (getActivity() != null) {
+                        BRClipboardManager.copyToClipboard(getActivity(), thePhrase.getText().toString());
+                        ((BreadWalletApp) getActivity().getApplication()).showCustomToast(getActivity(),
+                                getActivity().getString(R.string.copied), 300, Toast.LENGTH_SHORT, 0);
+                    }
                 }
-            });
-        }
-
-        if (!phraseWroteDown) {
-            checkBoxlayout.setVisibility(View.VISIBLE);
-            checkBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setCheckBoxImage();
-                    BRWalletManager.getInstance(getActivity()).animateSavePhraseFlow();
-                }
-            });
+            }, 2000);
         }
 
         if (phrase.length == 0) {
@@ -141,6 +126,7 @@ public class FragmentRecoveryPhrase extends Fragment {
         if (cleanPhrase.split(" ").length == 12 && cleanPhrase.charAt(cleanPhrase.length() - 1) == '\0') {
             ((BreadWalletApp) getActivity().getApplication()).showCustomDialog(getString(R.string.warning),
                     getActivity().getString(R.string.phrase_error), getString(R.string.ok));
+            FirebaseCrash.report(new IllegalArgumentException(getActivity().getString(R.string.phrase_error)));
         }
 
         thePhrase.setText(cleanPhrase);

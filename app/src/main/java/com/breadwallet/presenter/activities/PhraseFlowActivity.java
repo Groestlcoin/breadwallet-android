@@ -79,7 +79,6 @@ public class PhraseFlowActivity extends Activity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(getColor(R.color.status_bar));
 
-
         phraseFlowActivity = this;
 
         fragmentPhraseFlow1 = new FragmentPhraseFlow1();
@@ -102,7 +101,7 @@ public class PhraseFlowActivity extends Activity {
 
         showHideFragments();
         fragmentTransaction.commitAllowingStateLoss();
-        PostAuthenticationProcessor.getInstance().onShowPhraseFlowAuth(phraseFlowActivity);
+        PostAuthenticationProcessor.getInstance().onShowPhraseFlowAuth(phraseFlowActivity, false);
 
     }
 
@@ -162,10 +161,8 @@ public class PhraseFlowActivity extends Activity {
         switch (requestCode) {
             case BRConstants.SHOW_PHRASE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    Log.e(TAG, "RESULT_OK");
-                    PostAuthenticationProcessor.getInstance().onShowPhraseFlowAuth(this);
+                    PostAuthenticationProcessor.getInstance().onShowPhraseFlowAuth(this, true);
                 } else {
-                    Log.e(TAG, "NOT RESULT_OK NOT");
                     onBackPressed();
                 }
                 break;
@@ -179,7 +176,7 @@ public class PhraseFlowActivity extends Activity {
             animateSlide(fragmentPhraseFlow3, fragmentPhraseFlow2, IntroActivity.LEFT);
             fragmentPhraseFlow2.setPhrase(fragmentPhraseFlow3.getPhrase());
         } else {
-            if (CurrencyManager.getInstance(this).getBALANCE() >= SharedPreferencesManager.getLimit(this)
+            if (CurrencyManager.getInstance(this).getBALANCE() > SharedPreferencesManager.getLimit(this)
                     && !SharedPreferencesManager.getPhraseWroteDown(this)) {
                 super.onBackPressed();
             } else {
@@ -194,7 +191,6 @@ public class PhraseFlowActivity extends Activity {
 
     }
 
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -202,9 +198,14 @@ public class PhraseFlowActivity extends Activity {
 
     }
 
-    private void releasePhrase(){
+    private void releasePhrase() {
         fragmentPhraseFlow1.releasePhrase();
         fragmentPhraseFlow3.releasePhrase();
         fragmentRecoveryPhrase.releasePhrase();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 }

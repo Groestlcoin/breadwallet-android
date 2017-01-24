@@ -32,7 +32,7 @@
     <!-- android -->
     <string name="auth_required">Authentication required</string>
     <!-- android -->
-    <string name="auth_message">The phone has been unlocked for too long</string>
+    <string name="auth_message">Please unlock your device to continue.</string>
     <!-- android -->
     <string name="camera_configuration_failed">camera configuration failed</string>
     <!-- android -->
@@ -54,7 +54,7 @@
     <!-- android -->
     <string name="allow_camera_access">allow camera access in \"Settings\" > \"Apps\" > \"groestlwallet\" > \"Permissions\"</string>
     <!-- android -->
-    <string name="insecure_keyboard_message">Insecure keyboard detected\ngo to \"Settings\" > \"language &amp; input\" > \"keyboards\" and disable all custom input types</string>
+    <string name="insecure_keyboard_message">Custom keyboards are insecure and cannot be used to enter a recovery phrase. Press continue to select a Google keyboard.</string>
     <!-- android -->
     <string name="choose_an_email_client">Choose an Email client</string>
     <!-- android -->
@@ -250,6 +250,7 @@
     <string name="transaction_history">transaction history</string>
     <!-- checked -->
     <string name="import_private_key">import private key</string>
+    <string name="buy_bitcoin">Buy Bitcoin</string>
     <!-- checked -->
     <string name="rescan_blockchain">rescan blockchain</string>
     <!-- checked -->
@@ -327,13 +328,9 @@
     <!-- checked -->
     <string name="copied">copied</string>
     <!-- android -->
-    <!--<string name="phrase_flow1">To protect your funds, you must write down your recovery phrase and keep it in a safe place. You must do this before you continue to use your wallet.</string>-->
-    <!-- android -->
     <string name="continue_button">continue</string>
     <!-- android -->
     <string name="phrase_flow2">please write down your phrase.</string>
-    <!-- android -->
-    <string name="phrase_flow3">select the %s word of your recovery phrase from the list below.</string>
     <!-- android -->
     <string name="syncing_in_progress">Syncing in progress..</string>
     <!-- android -->
@@ -344,6 +341,17 @@
     <string name="step_holder">step %1$d of %2$d</string>
     <string name="recovery_phrase_set">recovery phrase set</string>
     <string name="write_down_your_recovery_phrase">WRITE DOWN YOUR \nRECOVERY PHRASE</string>
-    <string name="protect_your_wallet">protect your wallet and ensure you can recover it after replacing or resetting your phone, or disabling your lock screen.</string>
+    <string name="protect_your_wallet">protect your wallet and ensure you can recover it after replacing or resetting your phone, or disabling your lock screen</string>
+    <string name="word_nr2">select the <b>2nd</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr3">select the <b>3rd</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr4">select the <b>4th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr5">select the <b>5th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr6">select the <b>6th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr7">select the <b>7th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr8">select the <b>8th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr9">select the <b>9th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr10">select the <b>10th</b> word of your recovery phrase from the list below</string>
+    <string name="word_nr11">select the <b>11th</b> word of your recovery phrase from the list below</string>
+    <string name="early_access">early access</string>
 
 </resources>

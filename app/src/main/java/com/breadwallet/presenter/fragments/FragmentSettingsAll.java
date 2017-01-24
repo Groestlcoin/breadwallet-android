@@ -2,58 +2,39 @@ package com.breadwallet.presenter.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.breadwallet.R;
-import com.breadwallet.BreadWalletApp;
 import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.presenter.entities.TransactionListItem;
 import com.breadwallet.tools.adapter.TransactionListAdapter;
 import com.breadwallet.tools.animation.BRAnimator;
-import com.breadwallet.tools.util.BRConstants;
-import com.breadwallet.tools.util.BRStringFormatter;
-import com.breadwallet.tools.manager.CurrencyManager;
-import com.breadwallet.tools.util.CustomLogger;
-import com.breadwallet.tools.manager.SharedPreferencesManager;
-import com.breadwallet.tools.util.Utils;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
-import com.breadwallet.wallet.BRPeerManager;
 import com.breadwallet.wallet.BRWalletManager;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
 
 /**
  * BreadWallet
- * <p>
+ * <p/>
  * Created by Mihail Gutan <mihail@breadwallet.com> on 8/4/15.
  * Copyright (c) 2016 breadwallet LLC
- * <p>
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ * <p/>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * <p>
+ * <p/>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -68,6 +49,7 @@ public class FragmentSettingsAll extends Fragment {
     public static TransactionListItem[] transactionObjects;
     public static ListView transactionList;
     public static TransactionListAdapter adapter;
+    private static boolean refreshTransactionAvailable = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,13 +59,13 @@ public class FragmentSettingsAll extends Fragment {
 
         transactionList = (ListView) rootView.findViewById(R.id.transactions_list);
 
-        refreshTransactions(getActivity());
         adapter = new TransactionListAdapter(getActivity(), transactionObjects);
-        transactionList.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
         if (transactionObjects != null) {
             if (transactionObjects.length == 0) transactionObjects = null;
         }
+        if (transactionList != null)
+            transactionList.setAdapter(adapter);
+        refreshTransactions(getActivity());
         return rootView;
     }
 
@@ -97,27 +79,35 @@ public class FragmentSettingsAll extends Fragment {
         super.onResume();
         MiddleViewAdapter.resetMiddleView(getActivity(), null);
         refreshUI();
-        adapter.notifyDataSetChanged();
     }
 
     public static void refreshTransactions(final Activity ctx) {
-        transactionObjects = BRWalletManager.getInstance(ctx).getTransactions();
-
-        if (ctx != null && ctx instanceof MainActivity) {
-            ctx.runOnUiThread(new Runnable() {
+        if (refreshTransactionAvailable) {
+            refreshTransactionAvailable = false;
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    refreshUI();
+                    transactionObjects = BRWalletManager.getInstance(ctx).getTransactions();
+                    if (ctx != null && ctx instanceof MainActivity) {
+                        ctx.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshTransactionAvailable = true;
+                                refreshUI();
+                            }
+                        });
+                    }
                 }
-            });
+            }).start();
         }
 
     }
 
     public static void refreshUI() {
         if (BRAnimator.level != 1) return;
-        if (adapter != null)
+        if (adapter != null) {
             adapter.updateData(transactionObjects);
+        }
     }
 
     public static RelativeLayout getSeparationLine(int MODE, Activity ctx) {

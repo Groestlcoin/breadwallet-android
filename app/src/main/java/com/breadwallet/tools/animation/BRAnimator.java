@@ -34,8 +34,12 @@ import com.breadwallet.tools.adapter.MiddleViewAdapter;
 import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.adapter.CustomPagerAdapter;
+import com.platform.HTTPServer;
 
 import java.util.Stack;
+
+import static com.breadwallet.tools.util.BRConstants.PLATFORM_ON;
+import static com.platform.APIClient.server;
 
 /**
  * BreadWallet
@@ -87,12 +91,10 @@ public class BRAnimator {
                 // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(app,
                         Manifest.permission.CAMERA)) {
-                    Log.e(TAG, "YES explanation!");
                     ((BreadWalletApp) app.getApplication()).showCustomToast(app,
                             app.getString(R.string.allow_camera_access),
                             MainActivity.screenParametersPoint.y / 2, Toast.LENGTH_LONG, 0);
                 } else {
-                    Log.e(TAG, "NO explanation!");
                     // No explanation needed, we can request the permission.
                     ActivityCompat.requestPermissions(app,
                             new String[]{Manifest.permission.CAMERA},
@@ -164,6 +166,13 @@ public class BRAnimator {
             ((BreadWalletApp) context.getApplication()).cancelToast();
             final FragmentManager fragmentManager = context.getFragmentManager();
             if (level == 0) {
+                if (PLATFORM_ON)
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            HTTPServer.startServer();
+                        }
+                    }).start();
                 level++;
                 CustomPagerAdapter.adapter.showFragments(false, context);
                 context.setBurgerButtonImage(BRConstants.CLOSE);
@@ -193,6 +202,14 @@ public class BRAnimator {
                     keyboard.hideSoftInputFromWindow(CustomPagerAdapter.adapter.
                             mainFragment.addressEditText.getWindowToken(), 0);
             } else if (level == 1) {
+                if (PLATFORM_ON)
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            HTTPServer.stopServer();
+                        }
+                    }).start();
+
                 level--;
                 context.setBurgerButtonImage(BRConstants.BURGER);
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -211,12 +228,12 @@ public class BRAnimator {
     /**
      * Animate the transition on wipe wallet fragment
      */
+
     public static void pressWipeWallet(final MainActivity context, final Fragment to) {
         try {
             if (!wipeWalletOpen) {
                 wipeWalletOpen = true;
                 FragmentTransaction fragmentTransaction = context.getFragmentManager().beginTransaction();
-                //            fragmentTransaction.setCustomAnimations(R.animator.from_bottom, R.animator.to_top);
                 fragmentTransaction.replace(R.id.main_layout, to, to.getClass().getName());
                 fragmentTransaction.commit();
                 new Handler().postDelayed(new Runnable() {
@@ -253,7 +270,6 @@ public class BRAnimator {
             if (level > 1)
                 context.setBurgerButtonImage(BRConstants.BACK);
             FragmentTransaction fragmentTransaction = context.getFragmentManager().beginTransaction();
-//        fragmentTransaction.setCustomAnimations(R.animator.from_right, R.animator.to_left);
             fragmentTransaction.replace(R.id.main_layout, to, to.getClass().getName());
             if (previousFragment != null)
                 previous.add(previousFragment);
@@ -273,7 +289,6 @@ public class BRAnimator {
             e.printStackTrace();
         }
 
-//        Log.e(TAG, "The level is: " + level);
     }
 
     public static void animateSlideToRight(final MainActivity context) {
@@ -285,9 +300,7 @@ public class BRAnimator {
                 context.setBurgerButtonImage(BRConstants.BURGER);
             if (level == 1)
                 context.setBurgerButtonImage(BRConstants.CLOSE);
-//            Log.e(TAG, "The actual SettingsFragment: " + tmp);
             FragmentTransaction fragmentTransaction = context.getFragmentManager().beginTransaction();
-//        fragmentTransaction.setCustomAnimations(R.animator.from_left, R.animator.to_right);
             fragmentTransaction.replace(R.id.main_layout, tmp, tmp.getClass().getName());
             fragmentTransaction.commit();
             new Handler().postDelayed(new Runnable() {
@@ -321,7 +334,6 @@ public class BRAnimator {
                 @Override
                 public void run() {
                     multiplePressingAvailable = true;
-                    Log.w(TAG, "multiplePressingAvailable is back to - true");
                 }
             }, 300);
             return true;
@@ -337,7 +349,6 @@ public class BRAnimator {
                 @Override
                 public void run() {
                     horizontalSlideAvailable = true;
-                    Log.w(TAG, "multiplePressingAvailable is back to - true");
                 }
             }, horizontalSlideDuration);
             return true;
@@ -532,10 +543,6 @@ public class BRAnimator {
             });
             v.startAnimation(animation);
         }
-
-    }
-
-    public static void animateSavePhraseFlow() {
 
     }
 

@@ -4,11 +4,12 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
@@ -41,7 +42,6 @@ import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.security.PostAuthenticationProcessor;
 import com.breadwallet.tools.security.RequestHandler;
 import com.breadwallet.tools.security.RootHelper;
-import com.breadwallet.tools.adapter.AmountAdapter;
 import com.breadwallet.tools.adapter.CustomPagerAdapter;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
 import com.breadwallet.tools.adapter.ParallaxViewPager;
@@ -50,6 +50,10 @@ import com.breadwallet.tools.security.KeyStoreManager;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.BRPeerManager;
 import com.breadwallet.wallet.BRWalletManager;
+import com.google.firebase.crash.FirebaseCrash;
+import com.platform.APIClient;
+import com.platform.middlewares.plugins.CameraPlugin;
+import com.platform.middlewares.plugins.GeoLocationPlugin;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -57,6 +61,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+
+import static com.breadwallet.tools.util.BRConstants.PLATFORM_ON;
 
 /**
  * BreadWallet
@@ -123,48 +129,37 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (savedInstanceState != null)
-            savedInstanceState.clear();
-        super.onCreate(savedInstanceState);
+//        if (savedInstanceState != null)
+//            savedInstanceState.clear();
+        super.onCreate(null);
+
         setContentView(R.layout.activity_main);
         app = this;
         initializeViews();
 
+        FirebaseCrash.log("test log");
+        FirebaseCrash.report(new RuntimeException("test exception"));
+
         Utils.printPhoneSpecs();
-
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                BRWalletManager.getInstance(app).setUpTheWallet();
-            }
-        });
-        t.setPriority(Thread.MIN_PRIORITY);
-        t.start();
-
-        registerScreenLockReceiver();
 
         getWindowManager().getDefaultDisplay().getSize(screenParametersPoint);
 
         checkDeviceRooted();
 
-        if (Utils.isEmulatorOrDebug()) {
+        if (Utils.isEmulatorOrDebug(this)) {
             MODE = BRConstants.DEBUG;
-            Log.e(TAG, "DEBUG MODE!!!!!!");
+            Log.e(TAG, "DEBUG MODE!");
         }
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setUrlHandler();
-            }
-        }, 1000);
 
         setListeners();
         BRAnimator.scaleView(pageIndicatorLeft, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f,
                 BRConstants.PAGE_INDICATOR_SCALE_UP);
         setStatusBarColor();
-        if (CurrencyManager.getInstance(this).getBALANCE() < SharedPreferencesManager.getLimit(this))
-            BRWalletManager.showWritePhraseDialog(false);
+
+        setUrlHandler(getIntent());
+        if (PLATFORM_ON)
+            APIClient.getInstance(this).updatePlatform();
+
     }
 
     @Override
@@ -178,8 +173,7 @@ public class MainActivity extends FragmentActivity implements Observer {
         window.setStatusBarColor(getColor(R.color.status_bar));
     }
 
-    private void setUrlHandler() {
-        Intent intent = getIntent();
+    private void setUrlHandler(Intent intent) {
         Uri data = intent.getData();
         if (data == null) return;
         String scheme = data.getScheme();
@@ -192,14 +186,20 @@ public class MainActivity extends FragmentActivity implements Observer {
         }
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setUrlHandler(intent);
+
+    }
+
     private void setListeners() {
         pay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (BRAnimator.checkTheMultipressingAvailability()) {
                     hideAllBubbles();
-                    String amountHolder = FragmentScanResult.currentCurrencyPosition == BRConstants.BITCOIN_RIGHT ?
-                            AmountAdapter.getRightValue() : AmountAdapter.getLeftValue();
+                    String amountHolder = FragmentScanResult.instance.getBitcoinValue().value;
                     String addressHolder = FragmentScanResult.address;
                     String multiplyBy = "100";
                     int unit = SharedPreferencesManager.getCurrencyUnit(app);
@@ -209,13 +209,12 @@ public class MainActivity extends FragmentActivity implements Observer {
                 }
             }
         });
-
+        pay.setFilterTouchesWhenObscured(true);
         viewFlipper.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (BRAnimator.scanResultFragmentOn)
                     return;
-
                 if (MiddleViewAdapter.getSyncing() && BRAnimator.level == 0) {
                     hideAllBubbles();
                     if (middleBubbleBlocksCount == 0) {
@@ -279,7 +278,7 @@ public class MainActivity extends FragmentActivity implements Observer {
                     SpringAnimator.showAnimation(lockerButton);
                     if (!KeyStoreManager.getPassCode(app).isEmpty())
                         ((BreadWalletApp) getApplication()).promptForAuthentication(app,
-                                BRConstants.AUTH_FOR_GENERAL, null, null, null, null);
+                                BRConstants.AUTH_FOR_GENERAL, null, null, null, null, false);
                 }
 
             }
@@ -301,12 +300,16 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     private void checkDeviceRooted() {
         final boolean hasBitcoin = CurrencyManager.getInstance(this).getBALANCE() > 0;
-        if (RootHelper.isDeviceRooted()) {
+        boolean isDebuggable = 0 != (getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE);
+        if (RootHelper.isDeviceRooted() && !isDebuggable) {
 
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (app == null) return;
+                    if (app == null) {
+                        Log.e(TAG, "WARNING: checkDeviceRooted: app - null");
+                        return;
+                    }
                     AlertDialog.Builder builder = new AlertDialog.Builder(app);
                     builder.setTitle(R.string.device_security_compromised)
                             .setMessage(String.format(getString(R.string.rooted_message),
@@ -336,18 +339,33 @@ public class MainActivity extends FragmentActivity implements Observer {
     @Override
     protected void onResume() {
         super.onResume();
+        ((BreadWalletApp) getApplicationContext()).setUnlocked(false);
         appInBackground = false;
         middleViewState = 0;
         middleBubbleBlocksCount = 0;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                BRWalletManager.getInstance(app).setUpTheWallet();
+            }
+        }).start();
+
         app = this;
         final BRWalletManager m = BRWalletManager.getInstance(this);
         CurrencyManager currencyManager = CurrencyManager.getInstance(this);
         currencyManager.startTimer();
         currencyManager.deleteObservers();
         currencyManager.addObserver(this);
-        MiddleViewAdapter.resetMiddleView(this, null);
-        boolean isNetworkAvailable = ((BreadWalletApp) getApplication()).isNetworkAvailable(this);
+        final boolean isNetworkAvailable = ((BreadWalletApp) getApplication()).hasInternetAccess();
         networkErrorBar.setVisibility(isNetworkAvailable ? View.GONE : View.VISIBLE);
+
+        lockerButton.setVisibility(BreadWalletApp.unlocked ? View.INVISIBLE : View.VISIBLE);
         startStopReceiver(true);
         BRPeerManager.getInstance(app).refreshConnection();
         new Handler().postDelayed(new Runnable() {
@@ -366,14 +384,12 @@ public class MainActivity extends FragmentActivity implements Observer {
                 if (SharedPreferencesManager.getPhraseWroteDown(app)) return;
                 long balance = CurrencyManager.getInstance(app).getBALANCE();
                 long limit = SharedPreferencesManager.getLimit(app);
-                Log.e(TAG, "balance: " + balance);
-                Log.e(TAG, "limit: " + limit);
-                if (balance >= limit)
+                if (balance > limit)
                     BRWalletManager.getInstance(app).animateSavePhraseFlow();
             }
         }, 4000);
         BRWalletManager.refreshAddress();
-
+        checkUnlockedTooLong();
     }
 
     @Override
@@ -396,8 +412,10 @@ public class MainActivity extends FragmentActivity implements Observer {
         finish();
         BRAnimator.level = 0;
         CurrencyManager.getInstance(this).stopTimerTask();
-//        Log.e(TAG, "Activity Destroyed!");
         unregisterScreenLockReceiver();
+        //sync the kv stores
+        if (PLATFORM_ON)
+            APIClient.getInstance(this).syncKvStore();
 
     }
 
@@ -437,6 +455,15 @@ public class MainActivity extends FragmentActivity implements Observer {
         qrBubble2 = (BubbleTextView) findViewById(R.id.qr_bubble2);
     }
 
+    //check if the user hasn't used the passcode in 2 weeks or more and ask for it
+    private void checkUnlockedTooLong() {
+        String pass = KeyStoreManager.getPassCode(this);
+        long passTime = KeyStoreManager.getLastPasscodeUsedTime(this);
+        if (pass.length() == 4 && (passTime + BRConstants.PASS_CODE_TIME_LIMIT <= System.currentTimeMillis())) {
+            ((BreadWalletApp) getApplication()).promptForAuthentication(this, BRConstants.AUTH_FOR_GENERAL, null, null, null, null, true);
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -453,7 +480,6 @@ public class MainActivity extends FragmentActivity implements Observer {
     @Override
     public void onBackPressed() {
         if (BRAnimator.checkTheMultipressingAvailability()) {
-            Log.e(TAG, "onBackPressed!");
             if (BRAnimator.wipeWalletOpen) {
                 BRAnimator.pressWipeWallet(this, new FragmentSettings());
                 activityButtonsEnable(true);
@@ -551,8 +577,7 @@ public class MainActivity extends FragmentActivity implements Observer {
     public void request(View view) {
         SpringAnimator.showAnimation(view);
         Intent intent;
-        String tempAmount = FragmentScanResult.currentCurrencyPosition == BRConstants.BITCOIN_RIGHT ?
-                AmountAdapter.getRightValue() : AmountAdapter.getLeftValue();
+        String tempAmount = FragmentScanResult.instance.getBitcoinValue().value;
         BRWalletManager m = BRWalletManager.getInstance(this);
         int unit = BRConstants.CURRENT_UNIT_BITCOINS;//BRConstants.CURRENT_UNIT_BITS;
         Activity context = MainActivity.app;
@@ -587,12 +612,21 @@ public class MainActivity extends FragmentActivity implements Observer {
         switch (requestCode) {
             case BRConstants.PAY_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    PostAuthenticationProcessor.getInstance().onPublishTxAuth(this);
+                    PostAuthenticationProcessor.getInstance().onPublishTxAuth(this, true);
                 }
                 break;
             case BRConstants.PAYMENT_PROTOCOL_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    PostAuthenticationProcessor.getInstance().onPaymentProtocolRequest(this);
+                    PostAuthenticationProcessor.getInstance().onPaymentProtocolRequest(this, true);
+                }
+                break;
+            case BRConstants.REQUEST_IMAGE_CAPTURE:
+                if (resultCode == RESULT_OK) {
+                    Bundle extras = data.getExtras();
+                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                    CameraPlugin.handleCameraImageTaken(this, imageBitmap);
+                } else {
+                    CameraPlugin.handleCameraImageTaken(this, null);
                 }
                 break;
 
@@ -611,6 +645,14 @@ public class MainActivity extends FragmentActivity implements Observer {
                 }
                 return;
             }
+            case BRConstants.GEO_REQUEST_ID: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    GeoLocationPlugin.handleGeoPermission(true);
+                } else {
+                    GeoLocationPlugin.handleGeoPermission(false);
+                }
+            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -626,27 +668,6 @@ public class MainActivity extends FragmentActivity implements Observer {
     @Override
     public void update(Observable observable, Object data) {
         MiddleViewAdapter.resetMiddleView(this, null);
-    }
-
-
-    private void registerScreenLockReceiver() {
-        final IntentFilter theFilter = new IntentFilter();
-        /** System Defined Broadcast */
-        theFilter.addAction(Intent.ACTION_SCREEN_ON);
-        theFilter.addAction(Intent.ACTION_SCREEN_OFF);
-
-        mPowerKeyReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String strAction = intent.getAction();
-
-                if (strAction.equals(Intent.ACTION_SCREEN_OFF)) {
-                    ((BreadWalletApp) getApplicationContext()).setUnlocked(false);
-                }
-            }
-        };
-
-        getApplicationContext().registerReceiver(mPowerKeyReceiver, theFilter);
     }
 
     private void unregisterScreenLockReceiver() {
@@ -676,6 +697,18 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     public class ToastUpdater extends Thread {
         public void run() {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //first set, for when the internet is not available, fixes the blank toast
+                    int latestBlockKnown = SharedPreferencesManager.getLastBlockHeight(MainActivity.this);
+                    int currBlock = SharedPreferencesManager.getStartHeight(MainActivity.this);
+                    String formattedBlockInfo = String.format(getString(R.string.blocks), currBlock, latestBlockKnown);
+                    middleBubbleBlocks.setText(formattedBlockInfo);
+                }
+            });
+
             while (middleBubbleBlocks.getVisibility() == View.VISIBLE) {
                 final int latestBlockKnown = BRPeerManager.getEstimatedBlockHeight();
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -689,19 +722,16 @@ public class MainActivity extends FragmentActivity implements Observer {
                 });
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (InterruptedException ignored) {
                 }
             }
         }
     }
 
     public void setProgress(int progress, String progressText) {
-        Log.e(TAG, "setProgress: progress:" + progress + ", progressText: " + progressText);
         if (syncProgressBar == null || syncProgressText == null) return;
         syncProgressBar.setProgress(progress);
         syncProgressText.setText(progressText);
-        Log.e(TAG, "syncProgressBar.progress: " + syncProgressBar.getProgress());
     }
 
 }

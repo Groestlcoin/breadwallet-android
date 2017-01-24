@@ -21,10 +21,10 @@ import com.google.zxing.Result;
 /**
  * Implements the "MECARD" address book entry format.
  *
- * Supported keys: N, SOUND, TEL, EMAIL, NOTE, ADR, BDAY, URL, plus ORG
- * Unsupported keys: TEL-AV, NICKNAME
+ * Supported kvs: N, SOUND, TEL, EMAIL, NOTE, ADR, BDAY, URL_EA, plus ORG
+ * Unsupported kvs: TEL-AV, NICKNAME
  *
- * Except for TEL, multiple values for keys are also not supported;
+ * Except for TEL, multiple values for kvs are also not supported;
  * the first one found takes precedence.
  *
  * Our understanding of the MECARD format is based on this document:
@@ -56,7 +56,7 @@ public final class AddressBookDoCoMoResultParser extends AbstractDoCoMoResultPar
       // No reason to throw out the whole card because the birthday is formatted wrong.
       birthday = null;
     }
-    String[] urls = matchDoCoMoPrefixedField("URL:", rawText, true);
+    String[] urls = matchDoCoMoPrefixedField("URL_EA:", rawText, true);
 
     // Although ORG may not be strictly legal in MECARD, it does exist in VCARD and we might as well
     // honor it when found in the wild.

@@ -1,9 +1,6 @@
 package com.breadwallet.tools.manager;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -62,7 +59,7 @@ public class CurrencyManager extends Observable {
     private TimerTask timerTask;
 
     private Handler handler;
-    public static boolean separatorNeedsToBeShown = false;
+    //    public static boolean separatorNeedsToBeShown = false;
     private final CurrencyListAdapter currencyListAdapter;
     private static Activity ctx;
 
@@ -81,9 +78,7 @@ public class CurrencyManager extends Observable {
     }
 
 
-
     public void setBalance(long balance) {
-        Log.e(TAG, "in the setBalance, BALANCE:  " + BALANCE);
         BALANCE = balance;
         setChanged();
         notifyObservers();
@@ -95,39 +90,38 @@ public class CurrencyManager extends Observable {
 
     private Set<CurrencyEntity> getCurrencies(Activity context) {
         Set<CurrencyEntity> set = new LinkedHashSet<>();
-        if (((BreadWalletApp)ctx.getApplication()).isNetworkAvailable(ctx)) {
+        if (((BreadWalletApp) ctx.getApplication()).hasInternetAccess()) {
             try {
-                JSONArray arr;
-                arr = JsonParser.getJSonArray(context);
-                String grsTicker = JsonParser.getGRSTicker(context);
-
+                JSONArray arr = JsonParser.getJSonArray(context);
                 JsonParser.updateFeePerKb(context);
 //                Log.e(TAG, "JSONArray arr.length(): " + arr.length());
-
-                int length = arr.length();
-                for (int i = 1; i < length; i++) {
-                    CurrencyEntity tmp = new CurrencyEntity();
-                    try {
-                        JSONObject tmpObj = (JSONObject) arr.get(i);
-                        tmp.name = tmpObj.getString("name");
-                        tmp.code = tmpObj.getString("code");
-                        tmp.codeAndName = tmp.code + " - " + tmp.name;
-                        tmp.rate = (float) tmpObj.getDouble("rate");
-                        tmp.rate = tmp.rate * (float)Double.parseDouble(grsTicker);
-                        String selectedISO = SharedPreferencesManager.getIso(context);
+                if (arr != null) {
+                    int length = arr.length();
+                    for (int i = 1; i < length; i++) {
+                        CurrencyEntity tmp = new CurrencyEntity();
+                        try {
+                            JSONObject tmpObj = (JSONObject) arr.get(i);
+                            tmp.name = tmpObj.getString("name");
+                            tmp.code = tmpObj.getString("code");
+                            tmp.codeAndName = tmp.code + " - " + tmp.name;
+                            tmp.rate = (float) tmpObj.getDouble("rate");
+                            String selectedISO = SharedPreferencesManager.getIso(context);
 //                        Log.e(TAG,"selectedISO: " + selectedISO);
-                        if (tmp.code.equalsIgnoreCase(selectedISO)) {
+                            if (tmp.code.equalsIgnoreCase(selectedISO)) {
 //                            Log.e(TAG, "theIso : " + theIso);
 //                                Log.e(TAG, "Putting the shit in the shared preffs");
-                            SharedPreferencesManager.putIso(context, tmp.code);
-                            SharedPreferencesManager.putCurrencyListPosition(context, i - 1);
+                                SharedPreferencesManager.putIso(context, tmp.code);
+                                SharedPreferencesManager.putCurrencyListPosition(context, i - 1);
 //                            Log.e(TAG,"position set: " + (i - 1));
-                            SharedPreferencesManager.putRate(context, tmp.rate);
+                                SharedPreferencesManager.putRate(context, tmp.rate);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        set.add(tmp);
                     }
-                    set.add(tmp);
+                } else {
+                    Log.e(TAG, "getCurrencies: failed to get currencies, response string: " + arr);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -149,9 +143,7 @@ public class CurrencyManager extends Observable {
 
         @Override
         protected void onPostExecute(Object o) {
-
             if (tmp.size() > 0) {
-//                Log.e(TAG, "inside the adapter changing shit");
                 currencyListAdapter.clear();
                 currencyListAdapter.addAll(tmp);
                 currencyListAdapter.notifyDataSetChanged();
@@ -178,7 +170,6 @@ public class CurrencyManager extends Observable {
 
         timerTask = new TimerTask() {
             public void run() {
-
                 //use a handler to run a toast that shows the current timestamp
                 handler.post(new Runnable() {
                     public void run() {

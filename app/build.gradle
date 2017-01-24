@@ -2,16 +2,16 @@ apply plugin: 'com.android.model.application'
 
 model {
     android {
-        compileSdkVersion = 24
-        buildToolsVersion = '24.0.2'
+        compileSdkVersion = 25
+        buildToolsVersion = '25.0.2'
 
         defaultConfig {
             testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
             applicationId = 'hashengineering.groestlcoin.groestlwallet'
             minSdkVersion.apiLevel = 23
-            targetSdkVersion.apiLevel = 24
-            versionCode = 27
-            versionName = "27"
+            targetSdkVersion.apiLevel = 25
+            versionCode = 36
+            versionName = "36"
         }
 
         ndk {
@@ -44,6 +44,7 @@ model {
         }
 
         buildTypes {
+            gitUpdateModules()
             release {
                 proguardFiles.add(file('proguard-rules.pro'))
                 minifyEnabled = false
@@ -59,7 +60,11 @@ model {
                 debuggable = true
                 minifyEnabled = false
                 ndk {
+<<<<<<< HEAD
                     //CFlags.addAll(['-DBITCOIN_TESTNET=1'])
+=======
+//                    CFlags.addAll(['-DBITCOIN_TESTNET=1'])
+>>>>>>> upstream/master
                     minifyEnabled = false
                     debuggable = true
                 }
@@ -68,12 +73,35 @@ model {
     }
 }
 
+def gitUpdateModules() {
+    ['sh', '-c', 'git submodule foreach git pull origin master'].execute().text.trim()
+    getLogger().debug("gitUpdateModules done!")
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:support-v13:24.2.0'
 
+    compile group: 'commons-io', name: 'commons-io', version: '2.0.1'
+    compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-continuation', version: '9.2.19.v20160908'
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.22'
+    //    compile 'org.apache.commons:commons-compress:1.8.1'
+
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:support-v13:25.1.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.google.firebase:firebase-core:10.0.1'
+    compile 'com.google.firebase:firebase-crash:10.0.1'
+    compile 'io.sigpipe:jbsdiff:1.0'
+    androidTestCompile 'com.android.support:support-annotations:25.1.0'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
 }
+apply plugin: 'com.google.gms.google-services'

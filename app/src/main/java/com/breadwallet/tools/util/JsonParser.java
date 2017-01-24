@@ -3,12 +3,12 @@ package com.breadwallet.tools.util;
 import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.util.Log;
 
 import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.wallet.BRWalletManager;
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,8 +16,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Locale;
@@ -58,12 +58,7 @@ public class JsonParser {
         try {
             JSONObject obj = new JSONObject(jsonString);
             jsonArray = obj.getJSONArray("body");
-            JSONObject headers = obj.getJSONObject("headers");
-            String secureDate = headers.getString("Date");
-            @SuppressWarnings("deprecation") long date = Date.parse(secureDate) / 1000;
 
-            SharedPreferencesManager.putSecureTime(activity, date);
-            Log.e(TAG, "Secure time set to: " + date);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -78,8 +73,9 @@ public class JsonParser {
 
     public static JSONArray getBackUpJSonArray(Activity activity) {
         String jsonString = callURL("https://bitpay.com/rates");
-        //        System.out.println("\n\njsonString: " + jsonString);
+
         JSONArray jsonArray = null;
+        if (jsonString == null) return null;
         try {
             JSONObject obj = new JSONObject(jsonString);
 
@@ -89,7 +85,6 @@ public class JsonParser {
             @SuppressWarnings("deprecation") long date = Date.parse(secureDate) / 1000;
 
             SharedPreferencesManager.putSecureTime(activity, date);
-//            Log.e(TAG,"\n\njsonArray: " + jsonArray);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -97,7 +92,11 @@ public class JsonParser {
     }
 
     public static void updateFeePerKb(Activity activity) {
-        //String jsonString = callURL("https://api.breadwallet.com/fee-per-kb");
+        String jsonString = null; //callURL("https://api.breadwallet.com/fee-per-kb");
+        if (jsonString == null || jsonString.isEmpty()) {
+            Log.e(TAG, "updateFeePerKb: failed to update fee, response string: " + jsonString);
+            return;
+        }
         long fee;
         //try {
             //JSONObject obj = new JSONObject(jsonString);
@@ -110,18 +109,19 @@ public class JsonParser {
                 Log.e(TAG, "fee set to: " + fee);
             }
         /*} catch (JSONException e) {
+            FirebaseCrash.report(e);
             e.printStackTrace();
         }*/
     }
 
     private static String callURL(String myURL) {
-//        System.out.println("Requested URL:" + myURL);
+//        System.out.println("Requested URL_EA:" + myURL);
         StringBuilder sb = new StringBuilder();
-        URLConnection urlConn = null;
+        HttpURLConnection urlConn = null;
         InputStreamReader in = null;
         try {
             URL url = new URL(myURL);
-            urlConn = url.openConnection();
+            urlConn = (HttpURLConnection) url.openConnection();
             int versionNumber = 0;
             MainActivity app = MainActivity.app;
             if (app != null) {
@@ -143,6 +143,18 @@ public class JsonParser {
             Log.e(TAG, "user agent: " + message);
             urlConn.setRequestProperty("User-agent", message);
             urlConn.setReadTimeout(60 * 1000);
+
+
+            String strDate = urlConn.getHeaderField("date");
+
+            if (strDate == null || app == null) {
+                Log.e(TAG, "callURL: strDate == null!!!");
+            } else {
+                @SuppressWarnings("deprecation") long date = Date.parse(strDate) / 1000;
+                SharedPreferencesManager.putSecureTime(app, date);
+                Log.e(TAG, "Secure time set to: " + date);
+            }
+
             if (urlConn.getInputStream() != null) {
                 in = new InputStreamReader(urlConn.getInputStream(),
                         Charset.defaultCharset());

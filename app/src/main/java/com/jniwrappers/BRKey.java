@@ -1,23 +1,23 @@
-package com.breadwallet.tools.exceptions;
+package com.jniwrappers;
 
-import java.security.GeneralSecurityException;
+import static android.R.attr.data;
 
 /**
  * BreadWallet
- * <p>
- * Created by Mihail Gutan <mihail@breadwallet.com> on 11/16/15.
+ * <p/>
+ * Created by Mihail Gutan on <mihail@breadwallet.com> 10/9/16.
  * Copyright (c) 2016 breadwallet LLC
- * <p>
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ * <p/>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * <p>
+ * <p/>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,25 +26,19 @@ import java.security.GeneralSecurityException;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+public class BRKey {
+    public static final String TAG = BRKey.class.getName();
 
-public class PaymentRequestExpiredException extends GeneralSecurityException {
-    public static final String TAG = PaymentRequestExpiredException.class.getName();
-
-    private PaymentRequestExpiredException(){
-        super();
+    public BRKey(byte[] key) {
+        setPrivKey(key);
     }
 
-    public PaymentRequestExpiredException(String msg){
-        super("The request is expired!");
-    }
+    private native void setPrivKey(byte[] privKey);
 
-    private PaymentRequestExpiredException(String msg, Throwable cause){
-        super(msg,cause);
-    }
+    public native byte[] compactSign(byte[] data);
 
-    private PaymentRequestExpiredException(Throwable cause){
-        super(cause);
-    }
+    public native byte[] encryptNative(byte[] data, byte[] nonce);
+
+    public native byte[] decryptNative(byte[] data, byte[] nonce);
 
 }
-

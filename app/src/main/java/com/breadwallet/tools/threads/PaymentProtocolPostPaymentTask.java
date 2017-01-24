@@ -71,7 +71,6 @@ public class PaymentProtocolPostPaymentTask extends AsyncTask<String, String, St
         try {
             waiting = true;
             sent = false;
-            Log.e(TAG, "the uri: " + paymentRequest.paymentURL);
             URL url = new URL(paymentRequest.paymentURL);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/groestlcoin-payment");
@@ -100,7 +99,7 @@ public class PaymentProtocolPostPaymentTask extends AsyncTask<String, String, St
 
             message = RequestHandler.parsePaymentACK(serializedBytes);
             PostAuthenticationProcessor.getInstance().setTmpPaymentRequest(paymentRequest);
-            PostAuthenticationProcessor.getInstance().onPaymentProtocolRequest(app);
+            PostAuthenticationProcessor.getInstance().onPaymentProtocolRequest(app,false);
         } catch (Exception e) {
             if (e instanceof java.net.UnknownHostException) {
                 if (app != null) {
@@ -121,9 +120,10 @@ public class PaymentProtocolPostPaymentTask extends AsyncTask<String, String, St
                 if (app != null) {
                     pendingErrorMessages.put(TITLE, app.getString(R.string.warning));
                     pendingErrorMessages.put(MESSAGE, app.getString(R.string.could_not_transmit_payment));
-                    if (!((BreadWalletApp) app.getApplication()).isNetworkAvailable(app))
+                    if (!((BreadWalletApp) app.getApplication()).hasInternetAccess())
                         ((BreadWalletApp) app.getApplication()).
                                 showCustomDialog(app.getString(R.string.could_not_make_payment), app.getString(R.string.not_connected_network), app.getString(R.string.ok));
+
                 }
 
             }

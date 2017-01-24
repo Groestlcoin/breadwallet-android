@@ -67,7 +67,6 @@ public class ImportPrivKeyTask extends AsyncTask<String, String, String> {
         key = params[0];
         if (key == null || key.isEmpty() || app == null) return null;
         String tmpAddrs = BRWalletManager.getInstance(app).getAddressFromPrivKey(key);
-        Log.e(TAG, "tmpAddrs: " + tmpAddrs);
         String url = UNSPENT_URL + tmpAddrs;// + "/utxo";
         importPrivKeyEntity = createTx(app, url);
         if (importPrivKeyEntity == null) {
@@ -84,6 +83,9 @@ public class ImportPrivKeyTask extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String s) {
+        if (importPrivKeyEntity == null) {
+            return;
+        }
         String sentBits = BRStringFormatter.getFormattedCurrencyString("BTC", importPrivKeyEntity.getAmount());
         String sentExchange = BRStringFormatter.getExchangeForAmount(SharedPreferencesManager.getRate(app),
                 SharedPreferencesManager.getIso(app), new BigDecimal(importPrivKeyEntity.getAmount()), app);
@@ -153,7 +155,7 @@ public class ImportPrivKeyTask extends AsyncTask<String, String, String> {
     }
 
     private static String callURL(String myURL) {
-//        System.out.println("Requested URL:" + myURL);
+//        System.out.println("Requested URL_EA:" + myURL);
         StringBuilder sb = new StringBuilder();
         URLConnection urlConn = null;
         InputStreamReader in = null;

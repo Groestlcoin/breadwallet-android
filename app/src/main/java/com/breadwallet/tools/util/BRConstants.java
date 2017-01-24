@@ -1,5 +1,7 @@
 package com.breadwallet.tools.util;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * BreadWallet
  * <p/>
@@ -51,6 +53,8 @@ public class BRConstants {
      * Permissions
      */
     public static final int CAMERA_REQUEST_ID = 34;
+    public static final int GEO_REQUEST_ID = 35;
+    public static final int CAMERA_REQUEST_GLIDERA_ID = 36;
 
     /**
      * Request codes
@@ -61,6 +65,7 @@ public class BRConstants {
     public static final int PUT_PHRASE_NEW_WALLET_REQUEST_CODE = 114;
     public static final int PUT_PHRASE_RECOVERY_WALLET_REQUEST_CODE = 115;
     public static final int PAYMENT_PROTOCOL_REQUEST_CODE = 116;
+    public static final int REQUEST_IMAGE_CAPTURE = 117;
 
     public static final String CANARY_STRING = "canary";
     public static final String FIRST_ADDRESS = "firstAddress";
@@ -145,6 +150,7 @@ public class BRConstants {
     public static final String PREFS_NAME = "MyPrefsFile";
     public static final String RECEIVE_ADDRESS = "receive_address";
     public static final String START_HEIGHT = "startHeight";
+    public static final String LAST_BLOCK_HEIGHT = "lastBlockHeight";
     public static final String TIPS_SHOWN = "tipsShown";
     public static final String CURRENT_UNIT = "currencyUnit";
     public static final String CURRENT_CURRENCY = "currentCurrency";
@@ -153,6 +159,8 @@ public class BRConstants {
     public static final String PHRASE_WRITTEN = "phraseWritten";
     public static final String LIMIT_PREFS = "fingerprintLimit";
     public static final String ALLOW_SPEND = "allowSpend";
+    public static final String USER_ID = "userId";
+    public static final String GEO_PERMISSIONS_REQUESTED = "geoPermissionsRequested";
 
     /**
      * Currency units
@@ -163,6 +171,10 @@ public class BRConstants {
 
     public static final String bitcoinLowercase = "\u01E5";
     public static final String bitcoinUppercase = "\u01E4";
+
+    public static final long PASS_CODE_TIME_LIMIT = TimeUnit.MILLISECONDS.convert(6, TimeUnit.DAYS);
+
+    public static final boolean PLATFORM_ON = true;
 
     private BRConstants() {
     }

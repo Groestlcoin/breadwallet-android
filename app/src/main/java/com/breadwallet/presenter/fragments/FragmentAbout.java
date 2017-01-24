@@ -1,4 +1,3 @@
-
 package com.breadwallet.presenter.fragments;
 
 import android.content.Intent;
@@ -7,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,6 @@ import com.breadwallet.R;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
-
 import java.util.Locale;
 
 /**
@@ -45,7 +44,7 @@ import java.util.Locale;
  */
 
 public class FragmentAbout extends Fragment {
-
+    private static final String TAG = FragmentAbout.class.getName();
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -89,7 +88,6 @@ public class FragmentAbout extends Fragment {
 
                         // need this to prompts email client only
                         email.setType("message/rfc822");
-
                         startActivity(Intent.createChooser(email, getActivity().getString(R.string.choose_an_email_client)));
                     }
                 }

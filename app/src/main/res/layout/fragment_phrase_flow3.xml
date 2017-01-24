@@ -2,7 +2,8 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:filterTouchesWhenObscured="true">
 
     <TextView
         android:id="@+id/textFlow3"
@@ -10,12 +11,14 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/words_layout"
         android:layout_marginBottom="50dp"
-        android:layout_marginEnd="30dp"
-        android:layout_marginStart="30dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:filterTouchesWhenObscured="true"
+        android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:padding="20dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/dark_grey" />
+        android:textColor="@color/dark_grey"
+        android:textSize="17sp" />
 
 
     <TableLayout
@@ -24,6 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:clickable="false"
+        android:filterTouchesWhenObscured="true"
         android:paddingBottom="10dp"
         android:paddingEnd="20dp"
         android:paddingStart="20dp"
@@ -31,7 +35,8 @@
 
         <TableRow
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="fill_parent"
+            android:filterTouchesWhenObscured="true">
 
             <Button
                 android:id="@+id/word1"
@@ -41,6 +46,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
 
             <Button
@@ -51,6 +57,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
 
             <Button
@@ -61,12 +68,14 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
         </TableRow>
 
         <TableRow
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="fill_parent"
+            android:filterTouchesWhenObscured="true">
 
             <Button
                 android:id="@+id/word4"
@@ -76,6 +85,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
 
             <Button
@@ -86,6 +96,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
 
             <Button
@@ -96,6 +107,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:filterTouchesWhenObscured="true"
                 android:textSize="20sp" />
         </TableRow>
 
@@ -109,6 +121,7 @@
         android:layout_below="@+id/words_layout"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
+        android:filterTouchesWhenObscured="true"
         android:gravity="center"
         android:textColor="@color/dark_grey" />
 
@@ -120,6 +133,7 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="20dp"
         android:background="@android:color/transparent"
+        android:filterTouchesWhenObscured="true"
         android:text="@string/done"
         android:textColor="@color/dark_blue"
         android:textSize="18sp"
@@ -131,6 +145,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:background="@android:color/transparent"
+        android:filterTouchesWhenObscured="true"
         android:text="@string/skip"
         android:textColor="@color/light_gray"
         android:textSize="18sp" />
@@ -140,6 +155,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_alignParentStart="true"
-        android:background="@drawable/navigationback" />
+        android:background="@drawable/navigationback"
+        android:filterTouchesWhenObscured="true" />
 
 </RelativeLayout>
