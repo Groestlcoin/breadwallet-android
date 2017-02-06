@@ -85,8 +85,8 @@ public class TransactionListAdapter extends BaseAdapter {
         unconfirmedColor = ContextCompat.getColor(a, R.color.white);
         sentColor = Color.parseColor("#FF5454");
         receivedColor = Color.parseColor("#00BF00");
-        buyBitcoinEnabled = APIClient.getInstance(a).isFeatureEnabled(APIClient.FeatureFlags.BUY_BITCOIN.toString());
-        buyBitcoinEnabled = BRConstants.PLATFORM_ON; //todo delete
+        buyBitcoinEnabled = false;//APIClient.getInstance(a).isFeatureEnabled(APIClient.FeatureFlags.BUY_BITCOIN.toString());
+        //buyBitcoinEnabled = BRConstants.PLATFORM_ON; //todo delete
     }
 
     public void updateData(TransactionListItem[] d) {
