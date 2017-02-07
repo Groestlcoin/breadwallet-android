@@ -247,12 +247,15 @@ public class MainFragment extends Fragment {
                         addressEditText.setText("");
                     }
                     // Must call show() prior to fetching views
-                    TextView messageView = (TextView)alert.findViewById(android.R.id.message);
-                    messageView.setGravity(Gravity.CENTER);
+                    if(alert != null) {
+                        TextView messageView = (TextView) alert.findViewById(android.R.id.message);
+                        messageView.setGravity(Gravity.CENTER);
 
-                    TextView titleView = (TextView)alert.findViewById(getContext().getResources().getIdentifier("alertTitle", "id", "android"));
-                    if (titleView != null) {
-                        titleView.setGravity(Gravity.CENTER);
+
+                        TextView titleView = (TextView)alert.findViewById(getContext().getResources().getIdentifier("alertTitle", "id", "android"));
+                        if (titleView != null) {
+                            titleView.setGravity(Gravity.CENTER);
+                        }
                     }
                 }
             }
