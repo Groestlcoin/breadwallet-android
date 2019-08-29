@@ -124,9 +124,9 @@ public class BRConstants {
     /**
      * FragmentSpendLimit
      */
-    public static final int limit1 = 5000;
-    public static final int limit2 = 10000;
-    public static final int limit3 = 100000;
+    public static final int limit1 = 10;
+    public static final int limit2 = 100;
+    public static final int limit3 = 1000;
     public static final int factor = 100000000;
 
     /**
