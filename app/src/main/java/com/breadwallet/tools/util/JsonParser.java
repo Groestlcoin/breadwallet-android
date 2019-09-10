@@ -66,7 +66,7 @@ public class JsonParser {
     }
 
     public static String getGRSTicker(Activity activity) {
-        String string = callURL("http://www.groestlcoin.org/grsticker.php");
+        String string = callURL("https://www.groestlcoin.org/grsticker.php");
 
         return string;
     }
