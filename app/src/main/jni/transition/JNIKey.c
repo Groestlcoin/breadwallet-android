@@ -7,6 +7,8 @@
 #include <BRKey.h>
 #include <android/log.h>
 #include <BRCrypto.h>
+#include <BRAddress.h>
+#include <assert.h>
 #include "JNIKey.h"
 
 static BRKey _key;
@@ -40,6 +42,18 @@ JNIEXPORT void JNICALL Java_com_jniwrappers_BRKey_setPrivKey(
     int res = BRKeySetPrivKey(&_key, (const char *) bytePrivKey);
 //    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "key is set, _key: %s", _key.secret);
 }
+JNIEXPORT void JNICALL Java_com_jniwrappers_BRKey_setSecret(
+        JNIEnv *env,
+        jobject thiz,
+        jbyteArray privKey) {
+//    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "key is not set yet, _key: %s", _key.secret);
+
+    jbyte *bytePrivKey = (*env)->GetByteArrayElements(env, privKey, 0);
+    int res = BRKeySetSecret(&_key, (const UInt256 *) bytePrivKey, 1);
+
+    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "key is set, res: %d", res);
+    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "key is set, _key: %s", _key.secret);
+}
 
 JNIEXPORT jbyteArray JNICALL Java_com_jniwrappers_BRKey_encryptNative(JNIEnv *env, jobject thiz,
                                                                       jbyteArray data,
@@ -52,7 +66,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_jniwrappers_BRKey_encryptNative(JNIEnv *en
     uint8_t out[16 + dataSize];
 
     size_t outSize = BRChacha20Poly1305AEADEncrypt(out, sizeof(out), &_key, (uint8_t *) byteNonce,
-                                                   (uint8_t *) byteData, (size_t) dataSize, NULL, 0);
+                                                   (uint8_t *) byteData, (size_t) dataSize, NULL,
+                                                   0);
 
     jbyteArray result = (*env)->NewByteArray(env, (jsize) outSize);
     (*env)->SetByteArrayRegion(env, result, 0, (jsize) outSize, (const jbyte *) out);
@@ -72,7 +87,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_jniwrappers_BRKey_decryptNative(JNIEnv *en
 
     uint8_t out[dataSize];
 
-    size_t outSize = BRChacha20Poly1305AEADDecrypt(out, sizeof(out), &_key, (uint8_t *) byteNonce, (uint8_t *) byteData,
+    size_t outSize = BRChacha20Poly1305AEADDecrypt(out, sizeof(out), &_key, (uint8_t *) byteNonce,
+                                                   (uint8_t *) byteData,
                                                    (size_t) (dataSize), NULL, 0);
     jbyteArray result = (*env)->NewByteArray(env, (jsize) outSize);
     (*env)->SetByteArrayRegion(env, result, 0, (jsize) outSize, (const jbyte *) out);
@@ -82,9 +98,10 @@ JNIEXPORT jbyteArray JNICALL Java_com_jniwrappers_BRKey_decryptNative(JNIEnv *en
     return result;
 }
 
-//// chacha20-poly1305 authenticated encryption with associated data (AEAD): https://tools.ietf.org/html/rfc7539
-//size_t BRChacha20Poly1305AEADEncrypt(void *out, size_t outLen, const void *key32, const void *nonce12,
-//                                     const void *data, size_t dataLen, const void *ad, size_t adLen);
-//
-//size_t BRChacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, const void *nonce12,
-//                                     const void *data, size_t dataLen, const void *ad, size_t adLen);
+
+JNIEXPORT jbyteArray JNICALL Java_com_jniwrappers_BRKey_address(JNIEnv *env, jobject thiz) {
+    BRAddress address = BR_ADDRESS_NONE;
+    BRKeyAddress(&_key, address.s, sizeof(address));
+    assert(address.s[0] != '\0');
+    return (*env)->NewStringUTF(env, address.s);
+}

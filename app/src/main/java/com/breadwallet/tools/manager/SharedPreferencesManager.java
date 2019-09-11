@@ -3,6 +3,7 @@ package com.breadwallet.tools.manager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
@@ -14,12 +15,16 @@ import com.breadwallet.presenter.fragments.FragmentCurrency;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.wallet.BRWalletManager;
 
+import org.json.JSONArray;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -54,10 +59,16 @@ import static com.breadwallet.tools.util.BRConstants.GEO_PERMISSIONS_REQUESTED;
 public class SharedPreferencesManager {
     public static final String TAG = SharedPreferencesManager.class.getName();
 
-
     public static String getIso(Activity context) {
         SharedPreferences settingsToGet = context.getSharedPreferences(BRConstants.PREFS_NAME, 0);
-        return settingsToGet.getString(BRConstants.CURRENT_CURRENCY, Currency.getInstance(Locale.getDefault()).getCurrencyCode());
+        Currency currency;
+        try {
+            currency = Currency.getInstance(Locale.getDefault());
+        } catch (IllegalArgumentException e) {
+            currency = Currency.getInstance(Locale.ENGLISH);
+        }
+        String defaultIso = currency.getCurrencyCode();
+        return settingsToGet.getString(BRConstants.CURRENT_CURRENCY, defaultIso);
     }
 
     public static void putIso(Activity context, String code) {
@@ -127,6 +138,17 @@ public class SharedPreferencesManager {
         editor.putString(BRConstants.FIRST_ADDRESS, firstAddress);
         editor.apply();
     }
+    public static String getTrustNode(Activity context) {
+        SharedPreferences prefs = context.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("trustNode", "");
+    }
+
+    public static void putTrustNode(Activity context, String trustNode) {
+        SharedPreferences prefs = context.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("trustNode", trustNode);
+        editor.apply();
+    }
 
     public static long getFeePerKb(Activity context) {
         SharedPreferences prefs = context.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
@@ -178,6 +200,33 @@ public class SharedPreferencesManager {
         editor.apply();
     }
 
+    public static List<Integer> getBitIdNonces(Activity activity, String key) {
+        SharedPreferences prefs = activity.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
+        String result = prefs.getString(key, null);
+        List<Integer> list = new ArrayList<>();
+        try {
+            JSONArray arr = new JSONArray(result);
+            for (int i = 0; i < arr.length(); i++) {
+                int a = arr.getInt(i);
+                Log.d("found a nonce: ", a + "");
+                list.add(a);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public static void putBitIdNonces(Activity activity, List<Integer> nonces, String key) {
+        JSONArray arr = new JSONArray();
+        arr.put(nonces);
+        SharedPreferences prefs = activity.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, arr.toString());
+        editor.apply();
+    }
+
     public static boolean getAllowSpend(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean(BRConstants.ALLOW_SPEND, true);
@@ -225,7 +274,7 @@ public class SharedPreferencesManager {
         }
         Set<CurrencyEntity> result = null;
         ByteArrayInputStream byteArray = new ByteArrayInputStream(bytes);
-        Base64InputStream base64InputStream = new Base64InputStream(byteArray, Base64.DEFAULT);
+        Base64InputStream base64InputStream = new Base64InputStream(byteArray, Base64.NO_WRAP);
         ObjectInputStream in;
         try {
             in = new ObjectInputStream(base64InputStream);
@@ -251,7 +300,7 @@ public class SharedPreferencesManager {
             objectOutput.close();
             arrayOutputStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Base64OutputStream b64 = new Base64OutputStream(out, Base64.DEFAULT);
+            Base64OutputStream b64 = new Base64OutputStream(out, Base64.NO_WRAP);
             b64.write(data);
             b64.close();
             out.close();

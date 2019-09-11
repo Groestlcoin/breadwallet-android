@@ -79,14 +79,14 @@ public class ReplicatedKVStore {
         dbHelper = new PlatformSqliteHelper(context);
     }
 
-    public void open() throws SQLException {
-        if (database == null || !database.isOpen())
-            database = dbHelper.getWritableDatabase();
-    }
-
-    public void close() {
-//        if (database != null && database.isOpen()) database.close();
-    }
+//    public void open() throws SQLException {
+//        if (database == null || !database.isOpen())
+//            database = dbHelper.getWritableDatabase();
+//    }
+//
+//    public void close() {
+////        if (database != null && database.isOpen()) database.close();
+//    }
 
     /**
      * Set the value of a key locally in the database. If syncImmediately is true (the default) then immediately
@@ -104,7 +104,7 @@ public class ReplicatedKVStore {
     }
 
     public CompletionObject set(KVEntity kv) {
-        open();
+        database = dbHelper.getWritableDatabase();
         try {
             if (isKeyValid(kv.getKey())) {
                 CompletionObject obj = new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.unknown);
@@ -127,8 +127,6 @@ public class ReplicatedKVStore {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            close();
         }
         return new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.unknown);
     }
@@ -152,7 +150,6 @@ public class ReplicatedKVStore {
         newVer = curVer + 1;
         byte[] encryptionData = encrypted ? encrypt(kv.getValue()) : kv.getValue();
 
-        Log.e(TAG, "_set: " + kv.getKey());
         boolean success = insert(new KVEntity(newVer, 0, key, encryptionData, kv.getTime(), kv.getDeleted()));
         assert (success);
         return new CompletionObject(newVer, kv.getTime(), null);
@@ -182,7 +179,7 @@ public class ReplicatedKVStore {
         KVEntity kv = null;
         Cursor cursor = null;
         long curVer = 0;
-        open();
+        database = dbHelper.getReadableDatabase();
         try {
             database.beginTransaction();
             try {
@@ -232,7 +229,6 @@ public class ReplicatedKVStore {
             if (cursor != null) {
                 cursor.close();
             }
-            close();
         }
 
         return new CompletionObject(kv, null);
@@ -254,7 +250,7 @@ public class ReplicatedKVStore {
     private long _localVersion(String key) {
         long version = 0;
         Cursor cursor = null;
-        open();
+        database = dbHelper.getReadableDatabase();
         try {
             String selectQuery = "SELECT " + PlatformSqliteHelper.KV_VERSION + ", " + PlatformSqliteHelper.KV_TIME + " FROM " + PlatformSqliteHelper.KV_STORE_TABLE_NAME + " WHERE key = ? ORDER BY version DESC LIMIT 1";
             cursor = database.rawQuery(selectQuery, new String[]{key});
@@ -266,20 +262,16 @@ public class ReplicatedKVStore {
         } finally {
             if (cursor != null)
                 cursor.close();
-            close();
         }
         return version;
     }
 
     public void deleteAllKVs() {
-        Log.e(TAG, "deleteKVs");
-        open();
+        database = dbHelper.getWritableDatabase();
         try {
             database.delete(PlatformSqliteHelper.KV_STORE_TABLE_NAME, PlatformSqliteHelper.KV_TIME + " <> -1", null);
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            close();
         }
 
     }
@@ -287,7 +279,7 @@ public class ReplicatedKVStore {
     public List<KVEntity> getAllKVs() {
         List<KVEntity> kvs = new ArrayList<>();
         Cursor cursor = null;
-        open();
+        database = dbHelper.getReadableDatabase();
         try {
             String selectQuery = "SELECT kvs.version, kvs.remote_version, kvs.key, kvs.value, kvs.thetime, kvs.deleted FROM " + PlatformSqliteHelper.KV_STORE_TABLE_NAME + " kvs " +
                     "INNER JOIN ( " +
@@ -312,12 +304,10 @@ public class ReplicatedKVStore {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            close();
             if (cursor != null) {
                 cursor.close();
             }
         }
-        Log.e(TAG, "kvs: " + kvs.size());
 
         return kvs;
     }
@@ -372,7 +362,7 @@ public class ReplicatedKVStore {
     public void syncKey(String key, long remoteVersion, long remoteTime, CompletionObject.RemoteKVStoreError err) {
         if (syncRunning) return;
         syncRunning = true;
-        open();
+        database = dbHelper.getWritableDatabase();
         try {
             if (remoteVersion == 0 || remoteTime == 0) {
                 CompletionObject completionObject = remoteKvStore.ver(key);
@@ -386,7 +376,6 @@ public class ReplicatedKVStore {
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            close();
             syncRunning = false;
         }
     }
@@ -432,15 +421,15 @@ public class ReplicatedKVStore {
 
             if (localKv.getDeleted() > 0 && err == CompletionObject.RemoteKVStoreError.tombstone) {
                 // was removed on both server and locally
-                Log.e(TAG, String.format("Local key %s was deleted, and so was the remote key", key));
+                Log.i(TAG, String.format("Local key %s was deleted, and so was the remote key", key));
                 return setRemoteVersion(key, localKv.getVersion(), localKv.getRemoteVersion()).err == null;
             }
             if (localKv.getTime() >= remoteTime) {// local is newer (or a tiebreaker)
                 if (localKv.getDeleted() > 0) {
-                    Log.e(TAG, String.format("Local key %s was deleted, removing remotely...", key));
+                    Log.i(TAG, String.format("Local key %s was deleted, removing remotely...", key));
                     CompletionObject obj = remoteKvStore.del(key, remoteVersion);
                     if (obj.err == CompletionObject.RemoteKVStoreError.notFound) {
-                        Log.e(TAG, String.format("Local key %s was already missing on the server. Ignoring", key));
+                        Log.i(TAG, String.format("Local key %s was already missing on the server. Ignoring", key));
                         return true;
                     }
                     if (obj.err != null) {
@@ -451,7 +440,7 @@ public class ReplicatedKVStore {
                     boolean success = setRemoteVersion(key, localKv.getVersion(), obj.version).err == null;
                     if (!success) return false;
                 } else {
-                    Log.e(TAG, String.format("Local key %s is newer, updating remotely...", key));
+                    Log.i(TAG, String.format("Local key %s is newer, updating remotely...", key));
                     // if the remote version is zero it means it doesnt yet exist on the server. set the remote version
                     // to "1" to create the key on the server
                     long useRemoteVer = (remoteVersion == 0 || remoteVersion < recorderRemoteVersion) ? 1 : remoteVersion;
@@ -463,14 +452,14 @@ public class ReplicatedKVStore {
                     }
 
                     boolean success = setRemoteVersion(key, localKv.getVersion(), obj.version).err == null;
-                    Log.e(TAG, String.format("Local key %s updated on server", key));
+                    Log.i(TAG, String.format("Local key %s updated on server", key));
                     if (!success) return false;
                 }
             } else {
                 // local is out-of-date
                 if (err == CompletionObject.RemoteKVStoreError.tombstone) {
                     // remote is deleted
-                    Log.e(TAG, String.format("Remote key %s deleted, removing locally", key));
+                    Log.i(TAG, String.format("Remote key %s deleted, removing locally", key));
                     CompletionObject obj = new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.unknown);
                     database.beginTransaction();
                     try {
@@ -484,11 +473,11 @@ public class ReplicatedKVStore {
                     if (obj.version != 0) {
                         boolean success = setRemoteVersion(key, obj.version, remoteVersion).err == null;
                         if (!success) return false;
-                        Log.e(TAG, String.format("Remote key %s was removed locally", key));
+                        Log.i(TAG, String.format("Remote key %s was removed locally", key));
 
                     }
                 } else {
-                    Log.e(TAG, String.format("Remote key %s is newer, fetching...", key));
+                    Log.i(TAG, String.format("Remote key %s is newer, fetching...", key));
                     CompletionObject remoteGet = remoteKvStore.get(key, remoteVersion);
                     KVEntity kv = remoteGet.kv;
                     if (remoteGet.err != null) {
@@ -533,7 +522,7 @@ public class ReplicatedKVStore {
         if (syncRunning) return false;
         syncRunning = true;
         long startTime = System.currentTimeMillis();
-        open();
+        database = dbHelper.getWritableDatabase();
         try {
             CompletionObject obj = remoteKvStore.keys();
             if (obj.err != null) {
@@ -553,20 +542,19 @@ public class ReplicatedKVStore {
                     allKvs.add(new KVEntity(0, 0, kv.getKey(), null, 0, 0));
             }
 
-            Log.e(TAG, String.format("Syncing %d kvs", allKvs.size()));
+            Log.i(TAG, String.format("Syncing %d kvs", allKvs.size()));
             int failures = 0;
             for (KVEntity k : allKvs) {
                 String s = k.getKey();
                 boolean success = _syncKey(k.getKey(), k.getRemoteVersion(), k.getTime(), k.getErr());
                 if (!success) failures++;
             }
-            Log.e(TAG, String.format("Finished syncing in %d, with failures: %d)", (System.currentTimeMillis() - startTime), failures));
+            Log.i(TAG, String.format("Finished syncing in %d, with failures: %d)", (System.currentTimeMillis() - startTime), failures));
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             syncRunning = false;
-            close();
         }
         return false;
     }
@@ -664,9 +652,9 @@ public class ReplicatedKVStore {
      * as removed on the server as well. `localVer` must match the most recent version in the local database.
      */
     public CompletionObject delete(String key, long localVersion) {
-        open();
+        database = dbHelper.getWritableDatabase();
         try {
-            Log.e(TAG, "kv deleted with key: " + key);
+            Log.i(TAG, "kv deleted with key: " + key);
             if (isKeyValid(key)) {
                 CompletionObject obj = new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.unknown);
                 database.beginTransaction();
@@ -688,8 +676,6 @@ public class ReplicatedKVStore {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            close();
         }
         return new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.unknown);
     }
@@ -705,7 +691,7 @@ public class ReplicatedKVStore {
                 Log.e(TAG, String.format("del key %s conflict: version %d != current version %d", key, localVersion, curVer));
                 return new CompletionObject(0, 0, CompletionObject.RemoteKVStoreError.conflict);
             }
-            Log.e(TAG, String.format("DEL key: %s ver: %d", key, curVer));
+            Log.i(TAG, String.format("DEL key: %s ver: %d", key, curVer));
             newVer = curVer + 1;
             cursor = database.query(PlatformSqliteHelper.KV_STORE_TABLE_NAME,
                     new String[]{PlatformSqliteHelper.KV_VALUE}, "key = ? AND version = ?", new String[]{key, String.valueOf(localVersion)},

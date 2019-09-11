@@ -1,9 +1,9 @@
 package com.breadwallet.wallet;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import com.breadwallet.BreadWalletApp;
@@ -16,8 +16,11 @@ import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.adapter.MiddleViewAdapter;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.sqlite.SQLiteManager;
+import com.breadwallet.tools.util.TrustedNode;
+import com.breadwallet.tools.util.Utils;
 
 import java.text.DecimalFormat;
+
 
 /**
  * BreadWallet
@@ -50,6 +53,7 @@ public class BRPeerManager {
     private static SyncProgressTask syncTask;
     private static Activity ctx;
 
+
     private BRPeerManager() {
     }
 
@@ -74,6 +78,10 @@ public class BRPeerManager {
 
     public static void syncStarted() {
         Log.d(TAG, "syncStarted");
+        int startHeight = SharedPreferencesManager.getStartHeight(ctx);
+        int lastHeight = SharedPreferencesManager.getLastBlockHeight(ctx);
+        if (startHeight > lastHeight) SharedPreferencesManager.putStartHeight(ctx, lastHeight);
+
         BRPeerManager.getInstance(ctx).refreshConnection();
     }
 
@@ -362,6 +370,17 @@ public class BRPeerManager {
 
     }
 
+    public void updateFixedPeer() {
+        String node = SharedPreferencesManager.getTrustNode(ctx);
+        String host = TrustedNode.getNodeHost(node);
+        int port = TrustedNode.getNodePort(node);
+//        Log.e(TAG, "trust onClick: host:" + host);
+//        Log.e(TAG, "trust onClick: port:" + port);
+        boolean success = setFixedPeer(host, port);
+        if (!success) Log.e(TAG, "updateFixedPeer: Failed to updateFixedPeer with input: " + node);
+        BRPeerManager.getInstance(ctx).connect();
+    }
+
     public static void updateLastBlockHeight(int blockHeight) {
         if (ctx == null) ctx = MainActivity.app;
         if (ctx == null) return;
@@ -375,6 +394,8 @@ public class BRPeerManager {
     public native void putPeer(byte[] peerAddress, byte[] peerPort, byte[] peerTimeStamp);
 
     public native void createPeerArrayWithCount(int count);
+
+    public native boolean setFixedPeer(String node, int port);
 
     public native void putBlock(byte[] block, int blockHeight);
 
@@ -391,6 +412,8 @@ public class BRPeerManager {
     public native boolean isConnected();
 
     public native void peerManagerFreeEverything();
+
+    public native String getCurrentPeerName();
 
     public native void rescan();
 }

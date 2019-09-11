@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.breadwallet.presenter.activities.MainActivity;
 import com.platform.APIClient;
+import com.platform.BRHTTPHelper;
 import com.platform.interfaces.Middleware;
 
 import org.apache.commons.io.IOUtils;
@@ -74,29 +75,21 @@ public class APIProxy implements Middleware {
     @Override
     public boolean handle(String target, org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         if (!target.startsWith(MOUNT_POINT)) return false;
-        Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+        Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
         String path = target.substring(MOUNT_POINT.length());
-//        Log.e(TAG, "handle: path: " + path);
         String queryString = baseRequest.getQueryString();
         if (queryString != null && queryString.length() > 0)
             path += "?" + queryString;
-//        Log.e(TAG, "handle: path with queryString: " + path);
         boolean auth = false;
         Request req = mapToOkHttpRequest(baseRequest, path, request);
         String authHeader = baseRequest.getHeader(SHOULD_AUTHENTICATE);
         if (authHeader != null && authHeader.toLowerCase().equals("yes")) auth = true;
-        Response res = apiInstance.sendRequest(req, auth);
+        Response res = apiInstance.sendRequest(req, auth, 0);
+
         if (res.code() == 599) {
-//            Log.e(TAG, "handle: time out!");
-            try {
-                baseRequest.setHandled(true);
-                response.sendError(599);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
+            Log.e(TAG, "handle: code 599: " + target + " " + baseRequest.getMethod());
+            return BRHTTPHelper.handleError(599, null, baseRequest, response);
         }
-//        Log.e(TAG, "handle: res: " + res.code() + ":" + res.message());
         ResponseBody body = res.body();
         String cType = body.contentType() == null ? null : body.contentType().toString();
         String resString = null;
@@ -108,28 +101,20 @@ public class APIProxy implements Middleware {
             e.printStackTrace();
         }
 
-        try {
-            response.setContentType(cType);
-//                Log.e(TAG, "responseString: " + resString + "\ncType: " + cType);
-            Headers headers = res.headers();
-            for (String s : headers.names()) {
-                if (Arrays.asList(bannedReceiveHeaders).contains(s.toLowerCase())) continue;
-                response.addHeader(s, res.header(s));
-            }
-            response.setContentLength(bodyBytes.length);
-            if (res.isSuccessful())
-                response.setStatus(res.code());
-            else {
-                response.sendError(res.code());
-            }
-            response.getOutputStream().write(bodyBytes);
-            baseRequest.setHandled(true);
-        } catch (IOException e) {
-            Log.e(TAG, "IOException: " + target);
-            e.printStackTrace();
+        response.setContentType(cType);
+        Headers headers = res.headers();
+        for (String s : headers.names()) {
+            if (Arrays.asList(bannedReceiveHeaders).contains(s.toLowerCase())) continue;
+            response.addHeader(s, res.header(s));
+        }
+        response.setContentLength(bodyBytes.length);
+        if (res.isSuccessful()) {
+            return BRHTTPHelper.handleSuccess(res.code(), bodyBytes, baseRequest, response, null);
+        } else {
+            Log.e(TAG, "RES IS NOT SUCCESSFUL: " + res.request().url() + ": " + res.code() + "(" + res.message() + ")");
+            return BRHTTPHelper.handleError(res.code(), null, baseRequest, response);
         }
 
-        return true;
     }
 
     private Request mapToOkHttpRequest(org.eclipse.jetty.server.Request baseRequest, String path, HttpServletRequest request) {

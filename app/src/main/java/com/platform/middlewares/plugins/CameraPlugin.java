@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,9 +23,11 @@ import com.breadwallet.tools.security.KeyStoreManager;
 import com.breadwallet.tools.util.BRConstants;
 import com.jniwrappers.BRBase58;
 import com.jniwrappers.BRKey;
+import com.platform.BRHTTPHelper;
 import com.platform.interfaces.Plugin;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Request;
@@ -37,6 +40,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -97,49 +101,33 @@ public class CameraPlugin implements Plugin {
         //
 
         if (target.startsWith("/_camera/take_picture")) {
-            Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
             final MainActivity app = MainActivity.app;
             if (app == null) {
-                try {
-                    response.sendError(500, "context is null");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+                Log.e(TAG, "handle: context is null: " + target + " " + baseRequest.getMethod());
+
+                return BRHTTPHelper.handleError(500, "context is null", baseRequest, response);
             }
 
             if (globalBaseRequest != null) {
-                try {
-                    Log.e(TAG, "handle: already taking a picture");
-                    response.sendError(423);
-                    baseRequest.setHandled(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+                Log.e(TAG, "handle: already taking a picture: " + target + " " + baseRequest.getMethod());
+
+                return BRHTTPHelper.handleError(423, null, baseRequest, response);
             }
 
             PackageManager pm = app.getPackageManager();
 
             if (!pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                Log.e(TAG, "handle: no camera available");
-                baseRequest.setHandled(true);
-                try {
-                    response.sendError(402);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+                Log.e(TAG, "handle: no camera available: ");
+                return BRHTTPHelper.handleError(402, null, baseRequest, response);
             }
-//            app.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
             if (ContextCompat.checkSelfPermission(app,
                     Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
                 // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(app,
                         Manifest.permission.CAMERA)) {
+                    Log.e(TAG, "handle: no camera access, showing instructions");
                     ((BreadWalletApp) app.getApplication()).showCustomToast(app,
                             app.getString(R.string.allow_camera_access),
                             MainActivity.screenParametersPoint.y / 2, Toast.LENGTH_LONG, 0);
@@ -159,60 +147,50 @@ public class CameraPlugin implements Plugin {
                 continuation.suspend(response);
                 globalBaseRequest = baseRequest;
             }
-//                }
-//            });
 
             return true;
         } else if (target.startsWith("/_camera/picture/")) {
-            Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
             final MainActivity app = MainActivity.app;
             if (app == null) {
-                try {
-                    response.sendError(500, "context is null");
-                    baseRequest.setHandled(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+                Log.e(TAG, "handle: context is null: " + target + " " + baseRequest.getMethod());
+                return BRHTTPHelper.handleError(500, "context is null", baseRequest, response);
             }
             String id = target.replace("/_camera/picture/", "");
             byte[] pictureBytes = readPictureForId(app, id);
             if (pictureBytes == null) {
-                Log.e(TAG, "handle: WARNING pictureBytes is null");
+                Log.e(TAG, "handle: WARNING pictureBytes is null: " + target + " " + baseRequest.getMethod());
+                return BRHTTPHelper.handleError(500, "pictureBytes is null", baseRequest, response);
+            }
+            byte[] imgBytes = pictureBytes;
+            String b64opt = request.getParameter("base64");
+            String contentType = "image/jpeg";
+            if (b64opt != null && !b64opt.isEmpty()) {
+                contentType = "text/plain";
+                String b64 = "data:image/jpeg;base64," + Base64.encodeToString(pictureBytes, Base64.NO_WRAP);
                 try {
-                    response.sendError(500);
-                    baseRequest.setHandled(true);
-                } catch (IOException e) {
+                    imgBytes = b64.getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
+                    return BRHTTPHelper.handleError(500, null, baseRequest, response);
                 }
-                return true;
             }
-            try {
-                response.getOutputStream().write(pictureBytes);
-                response.setStatus(200);
-                baseRequest.setHandled(true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return true;
+            return BRHTTPHelper.handleSuccess(200, null, baseRequest, response, contentType);
         } else return false;
     }
 
     public static void handleCameraImageTaken(final Context context, final Bitmap img) {
-        Log.e(TAG, "handleCameraImageTaken: ");
         new Thread(new Runnable() {
             @Override
             public void run() {
                 if (globalBaseRequest == null || continuation == null) {
-
                     Log.e(TAG, "handleCameraImageTaken: WARNING: " + continuation + " " + globalBaseRequest);
                     return;
                 }
                 try {
                     if (img == null) {
-                        ((HttpServletResponse) continuation.getServletResponse()).setStatus(204);
                         globalBaseRequest.setHandled(true);
+                        ((HttpServletResponse) continuation.getServletResponse()).setStatus(204);
                         continuation.complete();
                         continuation = null;
                         return;
@@ -224,8 +202,17 @@ public class CameraPlugin implements Plugin {
                             respJson.put("id", id);
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            globalBaseRequest.setHandled(true);
+                            try {
+                                ((HttpServletResponse) continuation.getServletResponse()).sendError(500);
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                            continuation.complete();
+                            continuation = null;
+                            return;
                         }
-                        Log.e(TAG, "handleCameraImageTaken: wrote image to: " + id);
+                        Log.i(TAG, "handleCameraImageTaken: wrote image to: " + id);
                         try {
                             ((HttpServletResponse) continuation.getServletResponse()).setStatus(200);
                             continuation.getServletResponse().getWriter().write(respJson.toString());
@@ -239,8 +226,8 @@ public class CameraPlugin implements Plugin {
                     } else {
                         Log.e(TAG, "handleCameraImageTaken: error writing image");
                         try {
-                            ((HttpServletResponse) continuation.getServletResponse()).sendError(500);
                             globalBaseRequest.setHandled(true);
+                            ((HttpServletResponse) continuation.getServletResponse()).sendError(500);
                             continuation.complete();
                             continuation = null;
                         } catch (IOException e) {
@@ -258,34 +245,20 @@ public class CameraPlugin implements Plugin {
     }
 
     private static String writeToFile(Context context, Bitmap img) {
-        Log.e(TAG, "writeToFile");
         String name = null;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        FileOutputStream fileOutputStream = null;
         try {
-//            out = new FileOutputStream(image);
             img.compress(Bitmap.CompressFormat.JPEG, 50, out);
-
             name = CryptoHelper.base58ofSha256(out.toByteArray());
-
             File storageDir = new File(context.getFilesDir().getAbsolutePath() + "/pictures/");
-            storageDir.mkdir();
-//            File image = File.createTempFile(
-//                    name,  /* prefix */
-//                    ".jpeg",         /* suffix */
-//                    storageDir      /* directory */
-//            );
             File image = new File(storageDir, name + ".jpeg");
-
-            fileOutputStream = new FileOutputStream(image);
-            fileOutputStream.write(out.toByteArray());
+            FileUtils.writeByteArrayToFile(image, out.toByteArray());
             return name;
             // PNG is a lossless format, the compression factor (100) is ignored
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                if (fileOutputStream != null) fileOutputStream.close();
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -295,7 +268,7 @@ public class CameraPlugin implements Plugin {
     }
 
     public byte[] readPictureForId(Context context, String id) {
-        Log.e(TAG, "readPictureForId: " + id);
+        Log.i(TAG, "readPictureForId: " + id);
         try {
             //create FileInputStream object
             FileInputStream fin = new FileInputStream(new File(context.getFilesDir().getAbsolutePath() + "/pictures/" + id + ".jpeg"));
@@ -304,9 +277,9 @@ public class CameraPlugin implements Plugin {
             return IOUtils.toByteArray(fin);
 
         } catch (FileNotFoundException e) {
-            System.out.println("File not found" + e);
+            Log.e(TAG, "File not found " + e);
         } catch (IOException ioe) {
-            System.out.println("Exception while reading the file " + ioe);
+            Log.e(TAG, "Exception while reading the file " + ioe);
         }
         return null;
     }

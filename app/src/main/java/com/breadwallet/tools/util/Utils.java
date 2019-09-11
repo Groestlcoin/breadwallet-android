@@ -2,21 +2,33 @@ package com.breadwallet.tools.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.breadwallet.R;
 import com.breadwallet.presenter.activities.MainActivity;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -64,7 +76,7 @@ public class Utils {
     }
 
     public static boolean isUsingCustomInputMethod(Activity context) {
-        if(context == null) return false;
+        if (context == null) return false;
         InputMethodManager imm = (InputMethodManager) context.getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         List<InputMethodInfo> mInputMethodProperties = imm.getEnabledInputMethodList();
@@ -124,11 +136,11 @@ public class Utils {
         return result;
     }
 
-    public static boolean isNullOrEmpty(String str){
+    public static boolean isNullOrEmpty(String str) {
         return str == null || str.isEmpty();
     }
 
-    public static boolean isNullOrEmpty(byte[] arr){
+    public static boolean isNullOrEmpty(byte[] arr) {
         return arr == null || arr.length == 0;
     }
 
@@ -136,9 +148,13 @@ public class Utils {
         return collection == null || collection.size() == 0;
     }
 
-    public static int getPixelsFromDps(Context context, int dps){
+    public static int getPixelsFromDps(Context context, int dps) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dps * scale + 0.5f);
+    }
+
+    public static int getPixelsFromSps(Context context, float sp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
     }
 
     public static String bytesToHex(byte[] in) {
@@ -148,4 +164,34 @@ public class Utils {
         }
         return builder.toString();
     }
+
+    public static byte[] hexToBytes(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    public static String getLogs(Activity app) {
+        StringBuilder log = new StringBuilder();
+        try {
+            Process process = Runtime.getRuntime().exec("logcat -d");
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+
+
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                log.append(line);
+                log.append("\n");
+            }
+        } catch (IOException ignored) {
+            Toast.makeText(app.getApplicationContext(), ignored.toString(), Toast.LENGTH_SHORT).show();
+        }
+        return log.toString();
+    }
+
 }

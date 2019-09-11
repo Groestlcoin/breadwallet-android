@@ -1,13 +1,10 @@
-package com.jniwrappers;
-
-
-import com.breadwallet.tools.util.Utils;
+package com.breadwallet.tools.manager;
 
 /**
  * BreadWallet
  * <p/>
- * Created by Mihail Gutan on <mihail@breadwallet.com> 10/9/16.
- * Copyright (c) 2016 breadwallet LLC
+ * Created by Mihail Gutan on <mihail@breadwallet.com> 7/28/17.
+ * Copyright (c) 2017 breadwallet LLC
  * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,27 +24,8 @@ import com.breadwallet.tools.util.Utils;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class BRKey {
-    public static final String TAG = BRKey.class.getName();
+public class UIMessageManager {
 
-    public BRKey(byte[] key) {
-        setPrivKey(key);
-    }
 
-    public BRKey(String hexSecret) {
-        setSecret(Utils.hexToBytes(hexSecret));
-    }
-
-    private native void setPrivKey(byte[] privKey);
-
-    private native void setSecret(byte[] secret);
-
-    public native byte[] compactSign(byte[] data);
-
-    public native byte[] encryptNative(byte[] data, byte[] nonce);
-
-    public native byte[] decryptNative(byte[] data, byte[] nonce);
-
-    public native String address();
 
 }

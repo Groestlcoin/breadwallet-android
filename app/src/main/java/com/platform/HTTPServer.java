@@ -105,7 +105,8 @@ public class HTTPServer {
             }
         };
 
-        handlerCollection.addHandler(new ServerHandler());
+        ServerHandler serverHandler = new ServerHandler();
+        handlerCollection.addHandler(serverHandler);
         handlerCollection.addHandler(wsHandler);
 
         server.setHandler(handlerCollection);
@@ -140,7 +141,7 @@ public class HTTPServer {
     }
 
     public boolean isStarted() {
-        return server == null || server.isStarted();
+        return server != null && server.isStarted();
     }
 
     private static class ServerHandler extends AbstractHandler {

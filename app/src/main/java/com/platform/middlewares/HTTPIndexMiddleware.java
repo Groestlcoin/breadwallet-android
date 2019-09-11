@@ -3,9 +3,10 @@ package com.platform.middlewares;
 import android.util.Log;
 
 import com.breadwallet.presenter.activities.MainActivity;
+import com.platform.BRHTTPHelper;
 import com.platform.interfaces.Middleware;
 
-import junit.framework.Assert;
+//import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 
@@ -52,7 +53,7 @@ public class HTTPIndexMiddleware implements Middleware {
 
     @Override
     public boolean handle(String target, org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
-        Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+        Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
         String indexFile = MainActivity.app.getFilesDir() + "/" + BUNDLES + "/" + extractedFolder + "/index.html";
 
         File temp = new File(indexFile);
@@ -63,25 +64,15 @@ public class HTTPIndexMiddleware implements Middleware {
 
         try {
             byte[] body = FileUtils.readFileToByteArray(temp);
-            Assert.assertNotNull(body);
-            Assert.assertNotSame(body.length, 0);
-            ServletOutputStream out = response.getOutputStream();
-            response.setContentType("text/html;charset=utf-8");
+            //Assert.assertNotNull(body);
+            //Assert.assertNotSame(body.length, 0);
             response.setHeader("Content-Length", String.valueOf(body.length));
-            response.setStatus(200);
-            out.write(body);
-            baseRequest.setHandled(true);
-            return true;
+            return BRHTTPHelper.handleSuccess(200, body, baseRequest, response, "text/html;charset=utf-8");
         } catch (IOException e) {
             e.printStackTrace();
-            try {
-                response.sendError(500);
-                baseRequest.setHandled(true);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            Log.d(TAG, "handle: error sending response: " + target + " " + baseRequest.getMethod());
+            return BRHTTPHelper.handleError(500, null, baseRequest, response);
         }
 
-        return false;
     }
 }

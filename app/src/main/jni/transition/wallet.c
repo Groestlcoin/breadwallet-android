@@ -39,7 +39,7 @@ static size_t _transactionsCounter = 0;
 jclass _walletManagerClass;
 
 static JNIEnv *getEnv() {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getEnv Wallet");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getEnv Wallet");
     if (!_jvmW) return NULL;
 
     JNIEnv *env;
@@ -66,9 +66,8 @@ void callback(void *info, int error) {
     if (error) {
         __android_log_print(ANDROID_LOG_ERROR, "Message from callback: ", "publishing Failed: %s",
                             strerror(error));
-    }
-    else {
-        __android_log_print(ANDROID_LOG_ERROR, "Message from callback: ", "publishing Succeeded!");
+    } else {
+        __android_log_print(ANDROID_LOG_DEBUG, "Message from callback: ", "publishing Succeeded!");
     }
 
     (*env)->CallStaticVoidMethod(env, _walletManagerClass, mid,
@@ -77,7 +76,7 @@ void callback(void *info, int error) {
 
 
 static void balanceChanged(void *info, uint64_t balance) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "balanceChanged: %d", (int) balance);
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "balanceChanged: %d", (int) balance);
     JNIEnv *env = getEnv();
 
     if (!env || _walletManagerClass == NULL) return;
@@ -89,7 +88,7 @@ static void balanceChanged(void *info, uint64_t balance) {
 }
 
 static void txAdded(void *info, BRTransaction *tx) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "txAdded");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "txAdded");
     if (!_wallet || !tx) return;
 
     JNIEnv *env = getEnv();
@@ -100,9 +99,9 @@ static void txAdded(void *info, BRTransaction *tx) {
                                               "([BIJJLjava/lang/String;)V");
 
     //call java methods
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ",
-                        "BRPeerManagerLastBlockHeight(): %d tx->timestamp: %d",
-                        tx->blockHeight, tx->timestamp);
+//    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ",
+//                        "BRPeerManagerLastBlockHeight(): %d tx->timestamp: %d",
+//                        tx->blockHeight, tx->timestamp);
 
     uint8_t buf[BRTransactionSerialize(tx, NULL, 0)];
     size_t len = BRTransactionSerialize(tx, buf, sizeof(buf));
@@ -112,8 +111,7 @@ static void txAdded(void *info, BRTransaction *tx) {
 //    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "fee: %d", (int)fee);
     if (BRWalletAmountSentByTx(_wallet, tx) == 0) {
         amount = (jlong) BRWalletAmountReceivedFromTx(_wallet, tx);
-    }
-    else {
+    } else {
         amount = (jlong) (
                 (BRWalletAmountSentByTx(_wallet, tx) - BRWalletAmountReceivedFromTx(_wallet, tx) -
                  fee) * -1);
@@ -135,7 +133,7 @@ static void txAdded(void *info, BRTransaction *tx) {
 
 static void txUpdated(void *info, const UInt256 txHashes[], size_t count, uint32_t blockHeight,
                       uint32_t timestamp) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "txUpdated");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "txUpdated");
     if (!_wallet) return;
 
     JNIEnv *env = getEnv();
@@ -156,7 +154,7 @@ static void txUpdated(void *info, const UInt256 txHashes[], size_t count, uint32
 }
 
 static void txDeleted(void *info, UInt256 txHash, int notifyUser, int recommendRescan) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "txDeleted");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "txDeleted");
     if (!_wallet) return;
 
     JNIEnv *env = getEnv();
@@ -176,7 +174,7 @@ static void txDeleted(void *info, UInt256 txHash, int notifyUser, int recommendR
 JNIEXPORT jbyteArray
 Java_com_breadwallet_wallet_BRWalletManager_encodeSeed(JNIEnv *env, jobject thiz, jbyteArray seed,
                                                        jobjectArray stringArray) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "encodeSeed");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "encodeSeed");
 
     int wordsCount = (*env)->GetArrayLength(env, stringArray);
     int seedLength = (*env)->GetArrayLength(env, seed);
@@ -206,7 +204,7 @@ Java_com_breadwallet_wallet_BRWalletManager_encodeSeed(JNIEnv *env, jobject thiz
 JNIEXPORT void
 Java_com_breadwallet_wallet_BRWalletManager_createWallet(JNIEnv *env, jobject thiz, size_t txCount,
                                                          jbyteArray bytePubKey) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "createWallet");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "createWallet");
 
     jint rs = (*env)->GetJavaVM(env, &_jvmW); // cache the JavaVM pointer
     jclass peerManagerCLass = (*env)->FindClass(env, "com/breadwallet/wallet/BRWalletManager");
@@ -232,8 +230,6 @@ Java_com_breadwallet_wallet_BRWalletManager_createWallet(JNIEnv *env, jobject th
     BRWallet *w;
 
     if (txCount > 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "Message from C: ",
-                            "CREATING WALLET FROM TXS - txCount: %zu", txCount);
         w = BRWalletNew(_transactions, txCount, pubKey);
         _transactionsCounter = 0;
 
@@ -241,9 +237,7 @@ Java_com_breadwallet_wallet_BRWalletManager_createWallet(JNIEnv *env, jobject th
             free(_transactions);
             _transactions = NULL;
         }
-    }
-    else {
-        __android_log_print(ANDROID_LOG_INFO, "Message from C: ", "CREATING EMPTY WALLET");
+    } else {
         w = BRWalletNew(NULL, 0, pubKey);
     }
 
@@ -265,7 +259,7 @@ Java_com_breadwallet_wallet_BRWalletManager_createWallet(JNIEnv *env, jobject th
 JNIEXPORT jbyteArray
 Java_com_breadwallet_wallet_BRWalletManager_getMasterPubKey(JNIEnv *env, jobject thiz,
                                                             jbyteArray phrase) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getMasterPubKey");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getMasterPubKey");
     (*env)->GetArrayLength(env, phrase);
     jbyte *bytePhrase = (*env)->GetByteArrayElements(env, phrase, 0);
     UInt512 key = UINT512_ZERO;
@@ -286,7 +280,7 @@ JNIEXPORT void
 Java_com_breadwallet_wallet_BRWalletManager_putTransaction(JNIEnv *env, jobject thiz,
                                                            jbyteArray transaction,
                                                            jlong jBlockHeight, jlong jTimeStamp) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "putTransaction");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "putTransaction");
     if (!_transactions) return;
 
     int txLength = (*env)->GetArrayLength(env, transaction);
@@ -301,8 +295,8 @@ Java_com_breadwallet_wallet_BRWalletManager_putTransaction(JNIEnv *env, jobject 
     if (!tmpTx) return;
     tmpTx->blockHeight = (uint32_t) jBlockHeight;
     tmpTx->timestamp = (uint32_t) jTimeStamp;
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "tmpTx->timestamp: %u",
-                        tmpTx->timestamp);
+//    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "tmpTx->timestamp: %u",
+//                        tmpTx->timestamp);
 //    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "tmpTx: %s", u256_hex_encode(tmpTx->txHash));
     _transactions[_transactionsCounter++] = tmpTx;
 }
@@ -310,7 +304,7 @@ Java_com_breadwallet_wallet_BRWalletManager_putTransaction(JNIEnv *env, jobject 
 JNIEXPORT void JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_createTxArrayWithCount(JNIEnv *env, jobject thiz,
                                                                    int txCount) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "createTxArrayWithCount: %d",
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "createTxArrayWithCount: %d",
                         txCount);
     _transactions = calloc((size_t) txCount, sizeof(*_transactions));
     _transactionsCounter = 0;
@@ -320,17 +314,19 @@ Java_com_breadwallet_wallet_BRWalletManager_createTxArrayWithCount(JNIEnv *env, 
 
 JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_getReceiveAddress(JNIEnv *env,
                                                                                         jobject thiz) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getReceiveAddress");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getReceiveAddress");
     if (!_wallet) return NULL;
 
     BRAddress receiveAddress = BRWalletReceiveAddress(_wallet);
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getReceiveAddress:%s",
+                        receiveAddress.s);
 
     return (*env)->NewStringUTF(env, receiveAddress.s);
 }
 
 JNIEXPORT jobjectArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTransactions(
         JNIEnv *env, jobject thiz) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getTransactions");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getTransactions");
     if (!_wallet) return NULL;
     if (BRWalletTransactions(_wallet, NULL, 0) == 0) return NULL;
     //Retrieve the txs array
@@ -380,8 +376,8 @@ JNIEXPORT jobjectArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTr
                     (*env)->DeleteLocalRef(env, str);
                 }
 
-            }
-            else if (BRWalletContainsAddress(_wallet, transactions_sqlite[i]->outputs[j].address)) {
+            } else if (BRWalletContainsAddress(_wallet,
+                                               transactions_sqlite[i]->outputs[j].address)) {
                 jstring str = (*env)->NewStringUTF(env, transactions_sqlite[i]->outputs[j].address);
                 (*env)->SetObjectArrayElement(env, JtoAddresses, outCountAfterFilter, str);
                 (*env)->SetLongArrayRegion(env, JoutAmounts, outCountAfterFilter++, 1,
@@ -401,8 +397,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTr
 
                 (*env)->SetObjectArrayElement(env, JfromAddresses, inCountAfterFilter++, str);
                 (*env)->DeleteLocalRef(env, str);
-            }
-            else {
+            } else {
                 jstring str = (*env)->NewStringUTF(env, transactions_sqlite[i]->inputs[j].address);
 
                 (*env)->SetObjectArrayElement(env, JfromAddresses, inCountAfterFilter++, str);
@@ -437,7 +432,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTr
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_validateAddress(JNIEnv *env, jobject obj,
                                                             jstring address) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "validateAddress");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "validateAddress");
 
     const char *str = (*env)->GetStringUTFChars(env, address, NULL);
     int result = BRAddressIsValid(str);
@@ -450,7 +445,7 @@ Java_com_breadwallet_wallet_BRWalletManager_validateAddress(JNIEnv *env, jobject
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_addressContainedInWallet(JNIEnv *env, jobject obj,
                                                                      jstring address) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "addressContainedInWallet");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "addressContainedInWallet");
     if (!_wallet) return JNI_FALSE;
 
     const char *str = (*env)->GetStringUTFChars(env, address, NULL);
@@ -462,7 +457,7 @@ Java_com_breadwallet_wallet_BRWalletManager_addressContainedInWallet(JNIEnv *env
 
 JNIEXPORT jlong JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_getMinOutputAmount(JNIEnv *env, jobject obj) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getMinOutputAmount");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getMinOutputAmount");
 
     if (!_wallet) return 0;
     return (jlong) BRWalletMinOutputAmount(_wallet);
@@ -470,14 +465,14 @@ Java_com_breadwallet_wallet_BRWalletManager_getMinOutputAmount(JNIEnv *env, jobj
 
 JNIEXPORT jlong JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_getMinOutputAmountRequested(JNIEnv *env, jobject obj) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getMinOutputAmountRequested");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getMinOutputAmountRequested");
     return (jlong) TX_MIN_OUTPUT_AMOUNT;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_addressIsUsed(JNIEnv *env, jobject obj,
                                                           jstring address) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "addressIsUsed");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "addressIsUsed");
     if (!_wallet) return JNI_FALSE;
 
     const char *str = (*env)->GetStringUTFChars(env, address, NULL);
@@ -490,16 +485,16 @@ Java_com_breadwallet_wallet_BRWalletManager_addressIsUsed(JNIEnv *env, jobject o
 
 JNIEXPORT jlong JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_getMaxOutputAmount(JNIEnv *env, jobject obj) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getMaxOutputAmount");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getMaxOutputAmount");
     assert(_wallet);
-    if(!_wallet) return -1;
+    if (!_wallet) return -1;
     return (jlong) BRWalletMaxOutputAmount(_wallet);
 }
 
 JNIEXPORT jint JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_feeForTransaction(JNIEnv *env, jobject obj,
                                                               jstring address, jlong amount) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "feeForTransaction");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "feeForTransaction");
     if (!_wallet) return 0;
 
     const char *rawAddress = (*env)->GetStringUTFChars(env, address, NULL);
@@ -511,7 +506,7 @@ Java_com_breadwallet_wallet_BRWalletManager_feeForTransaction(JNIEnv *env, jobje
 JNIEXPORT jbyteArray JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_tryTransaction(JNIEnv *env, jobject obj,
                                                            jstring jAddress, jlong jAmount) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "tryTransaction");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "tryTransaction");
     if (!_wallet) return 0;
 
     const char *rawAddress = (*env)->GetStringUTFChars(env, jAddress, NULL);
@@ -533,7 +528,7 @@ Java_com_breadwallet_wallet_BRWalletManager_tryTransaction(JNIEnv *env, jobject 
 
 JNIEXPORT jboolean JNICALL Java_com_breadwallet_wallet_BRWalletManager_isCreated(JNIEnv *env,
                                                                                  jobject obj) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "wallet isCreated %s",
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "wallet isCreated %s",
                         _wallet ? "yes" : "no");
     return (jboolean) (_wallet ? JNI_TRUE : JNI_FALSE);
 }
@@ -541,7 +536,7 @@ JNIEXPORT jboolean JNICALL Java_com_breadwallet_wallet_BRWalletManager_isCreated
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_transactionIsVerified(JNIEnv *env, jobject obj,
                                                                   jstring jtxHash) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "transactionIsVerified");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "transactionIsVerified");
     if (!_wallet) return JNI_FALSE;
 
     const char *txHash = (*env)->GetStringUTFChars(env, jtxHash, NULL);
@@ -559,20 +554,22 @@ Java_com_breadwallet_wallet_BRWalletManager_transactionIsVerified(JNIEnv *env, j
 JNIEXPORT jlong JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_bitcoinAmount(JNIEnv *env, jobject thiz,
                                                           jlong localAmount, double price) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "bitcoinAmount: localAmount: %lli, price: %lf", localAmount, price);
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ",
+                        "bitcoinAmount: localAmount: %lli, price: %lf", localAmount, price);
     return (jlong) BRBitcoinAmount(localAmount, price);
 }
 
 JNIEXPORT jlong
 Java_com_breadwallet_wallet_BRWalletManager_localAmount(JNIEnv *env, jobject thiz, jlong amount,
                                                         double price) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "localAmount: amount: %lli, price: %lf", amount, price);
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ",
+                        "localAmount: amount: %lli, price: %lf", amount, price);
     return (jlong) BRLocalAmount(amount, price);
 }
 
 JNIEXPORT void JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_walletFreeEverything(JNIEnv *env, jobject thiz) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "walletFreeEverything");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "walletFreeEverything");
 
     if (_wallet) {
         BRWalletFree(_wallet);
@@ -588,7 +585,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_validateRecoveryPhrase(JNIEnv *env, jobject obj,
                                                                    jobjectArray stringArray,
                                                                    jstring jPhrase) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "validateRecoveryPhrase");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "validateRecoveryPhrase");
 
     int wordsCount = (*env)->GetArrayLength(env, stringArray);
     char *wordList[wordsCount];
@@ -614,7 +611,7 @@ Java_com_breadwallet_wallet_BRWalletManager_validateRecoveryPhrase(JNIEnv *env, 
 JNIEXPORT jstring JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_getFirstAddress(JNIEnv *env, jobject thiz,
                                                             jbyteArray bytePubKey) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getFirstAddress");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getFirstAddress");
 
     BRAddress address = BR_ADDRESS_NONE;
     jbyte *pubKeyBytes = (*env)->GetByteArrayElements(env, bytePubKey, 0);
@@ -631,7 +628,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_publishSerializedTransaction(JNIEnv *env, jobject thiz,
                                                                          jbyteArray serializedTransaction,
                                                                          jbyteArray phrase) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "publishSerializedTransaction");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "publishSerializedTransaction");
     if (!_peerManager) return JNI_FALSE;
 
     int txLength = (*env)->GetArrayLength(env, serializedTransaction);
@@ -648,8 +645,7 @@ Java_com_breadwallet_wallet_BRWalletManager_publishSerializedTransaction(JNIEnv 
     size_t seedSize = sizeof(key);
 
     BRWalletSignTransaction(_wallet, tmpTx, key.u8, seedSize);
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "BRTransactionIsSigned(tmpTx): %d",
-                        BRTransactionIsSigned(tmpTx));
+    assert(BRTransactionIsSigned(tmpTx));
     if (!tmpTx) return JNI_FALSE;
     BRPeerManagerPublishTx(_peerManager, tmpTx, NULL, callback);
     (*env)->ReleaseByteArrayElements(env, phrase, bytePhrase, JNI_ABORT);
@@ -659,7 +655,7 @@ Java_com_breadwallet_wallet_BRWalletManager_publishSerializedTransaction(JNIEnv 
 
 JNIEXPORT jlong JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTotalSent(JNIEnv *env,
                                                                                  jobject obj) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getTotalSent");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getTotalSent");
     if (!_wallet) return 0;
     return (jlong) BRWalletTotalSent(_wallet);
 }
@@ -667,7 +663,7 @@ JNIEXPORT jlong JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTotalSent
 JNIEXPORT void JNICALL Java_com_breadwallet_wallet_BRWalletManager_setFeePerKb(JNIEnv *env,
                                                                                jobject obj,
                                                                                jlong fee) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "setFeePerKb");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "setFeePerKb");
     if (!_wallet) return;
     BRWalletSetFeePerKb(_wallet, (uint64_t) fee);
 }
@@ -675,7 +671,7 @@ JNIEXPORT void JNICALL Java_com_breadwallet_wallet_BRWalletManager_setFeePerKb(J
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_isValidBitcoinPrivateKey(JNIEnv *env, jobject instance,
                                                                      jstring key) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "isValidBitcoinPrivateKey");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "isValidBitcoinPrivateKey");
 
     const char *privKey = (*env)->GetStringUTFChars(env, key, NULL);
     int result = BRPrivKeyIsValid(privKey);
@@ -687,7 +683,7 @@ Java_com_breadwallet_wallet_BRWalletManager_isValidBitcoinPrivateKey(JNIEnv *env
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_isValidBitcoinBIP38Key(JNIEnv *env, jobject instance,
                                                                    jstring key) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "isValidBitcoinBIP38Key");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "isValidBitcoinBIP38Key");
 
     const char *privKey = (*env)->GetStringUTFChars(env, key, NULL);
     int result = BRBIP38KeyIsValid(privKey);
@@ -699,7 +695,7 @@ Java_com_breadwallet_wallet_BRWalletManager_isValidBitcoinBIP38Key(JNIEnv *env, 
 JNIEXPORT jstring JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_getAddressFromPrivKey(JNIEnv *env, jobject instance,
                                                                   jstring privKey) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getAddressFromPrivKey");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getAddressFromPrivKey");
 
     const char *rawPrivKey = (*env)->GetStringUTFChars(env, privKey, NULL);
     BRKey key;
@@ -716,7 +712,7 @@ JNIEXPORT jstring JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_decryptBip38Key(JNIEnv *env, jobject instance,
                                                             jstring privKey,
                                                             jstring pass) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "decryptBip38Key");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "decryptBip38Key");
 
     BRKey key;
     const char *rawPrivKey = (*env)->GetStringUTFChars(env, privKey, NULL);
@@ -728,8 +724,7 @@ Java_com_breadwallet_wallet_BRWalletManager_decryptBip38Key(JNIEnv *env, jobject
 
         BRKeyPrivKey(&key, pk, sizeof(pk));
         return (*env)->NewStringUTF(env, pk);
-    }
-    else return (*env)->NewStringUTF(env, "");
+    } else return (*env)->NewStringUTF(env, "");
 }
 
 JNIEXPORT void JNICALL Java_com_breadwallet_wallet_BRWalletManager_createInputArray(JNIEnv *env,
@@ -747,7 +742,7 @@ JNIEXPORT void JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_addInputToPrivKeyTx(JNIEnv *env, jobject thiz,
                                                                 jbyteArray hash, int vout,
                                                                 jbyteArray script, jlong amount) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "addInputToPrivKeyTx");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "addInputToPrivKeyTx");
     _privKeyBalance += amount;
 
     jsize hashLength = (*env)->GetArrayLength(env, hash);
@@ -765,7 +760,7 @@ Java_com_breadwallet_wallet_BRWalletManager_addInputToPrivKeyTx(JNIEnv *env, job
 
 JNIEXPORT jobject JNICALL Java_com_breadwallet_wallet_BRWalletManager_getPrivKeyObject(JNIEnv *env,
                                                                                        jobject thiz) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getPrivKeyObject");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getPrivKeyObject");
     if (!_privKeyTx) return NULL;
 
     jclass importPrivKeyClass = (*env)->FindClass(env,
@@ -796,13 +791,14 @@ JNIEXPORT jobject JNICALL Java_com_breadwallet_wallet_BRWalletManager_getPrivKey
 JNIEXPORT jboolean JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_confirmKeySweep(JNIEnv *env, jobject thiz,
                                                             jbyteArray tx, jstring privKey) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "confirmKeySweep");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "confirmKeySweep");
+    assert(_peerManager);
     if (!_peerManager) return JNI_FALSE;
 
     int txLength = (*env)->GetArrayLength(env, tx);
     jbyte *byteTx = (*env)->GetByteArrayElements(env, tx, 0);
     BRTransaction *tmpTx = BRTransactionParse((uint8_t *) byteTx, (size_t) txLength);
-
+    assert(tmpTx);
     if (!tmpTx) return JNI_FALSE;
 
     const char *rawString = (*env)->GetStringUTFChars(env, privKey, 0);
@@ -822,7 +818,7 @@ Java_com_breadwallet_wallet_BRWalletManager_confirmKeySweep(JNIEnv *env, jobject
 JNIEXPORT jstring JNICALL
 Java_com_breadwallet_wallet_BRWalletManager_reverseTxHash(JNIEnv *env, jobject thiz,
                                                           jstring txHash) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "reverseTxHash");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "reverseTxHash");
 
     const char *rawString = (*env)->GetStringUTFChars(env, txHash, 0);
     UInt256 theHash = u256_hex_decode(rawString);
@@ -833,7 +829,7 @@ Java_com_breadwallet_wallet_BRWalletManager_reverseTxHash(JNIEnv *env, jobject t
 
 JNIEXPORT jint JNICALL Java_com_breadwallet_wallet_BRWalletManager_getTxCount(JNIEnv *env,
                                                                               jobject thiz) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "reverseTxHash");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "reverseTxHash");
     if (!_wallet) return 0;
     return (jint) BRWalletTransactions(_wallet, NULL, 0);
 }
@@ -843,14 +839,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getAuth
         JNIEnv *env,
         jobject thiz,
         jbyteArray seed) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getAuthPrivKeyForAPI");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getAuthPrivKeyForAPI");
     jbyte *bytePhrase = (*env)->GetByteArrayElements(env, seed, 0);
     size_t seedLen = (size_t) (*env)->GetArrayLength(env, seed);
     BRKey key;
     BRBIP32APIAuthKey(&key, bytePhrase, seedLen);
     char rawKey[BRKeyPrivKey(&key, NULL, 0)];
     BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "rawKey: %s",rawKey);
     jbyteArray result = (*env)->NewByteArray(env, (jsize) sizeof(rawKey));
     (*env)->SetByteArrayRegion(env, result, 0, (jsize) sizeof(rawKey), (jbyte *) rawKey);
     return result;
@@ -860,10 +855,9 @@ JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_getAuthPub
         JNIEnv *env,
         jobject thiz,
         jbyteArray privkey) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getAuthPublicKeyForAPI");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getAuthPublicKeyForAPI");
     jbyte *bytePrivKey = (*env)->GetByteArrayElements(env, privkey, 0);
     BRKey key;
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "rawKey: %s", (char *) bytePrivKey);
     BRKeySetPrivKey(&key, (const char *) bytePrivKey);
 
     size_t len = BRKeyPubKey(&key, NULL, 0);
@@ -880,7 +874,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getSeed
         JNIEnv *env,
         jobject thiz,
         jbyteArray phrase) {
-    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "getSeedFromPhrase");
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getSeedFromPhrase");
     jbyte *bytePhrase = (*env)->GetByteArrayElements(env, phrase, 0);
     UInt512 key = UINT512_ZERO;
     char *charPhrase = (char *) bytePhrase;
@@ -890,41 +884,9 @@ JNIEXPORT jbyteArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_getSeed
     return result;
 }
 
-//JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_signString(
-//        JNIEnv *env,
-//        jobject thiz,
-//        jstring stringToSign, jbyteArray privKey) {
-//    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "signString");
-//
-//    jbyte *bytePrivKey = (*env)->GetByteArrayElements(env, privKey, 0);
-//    BRKey key;
-//    int res = BRKeySetPrivKey(&key, (const char *) bytePrivKey);
-//    const char *rawString = (*env)->GetStringUTFChars(env, stringToSign, 0);
-//    size_t strLen = (size_t) (*env)->GetStringUTFLength(env, stringToSign);
-//    UInt256 md32;
-//    BRSHA256_2(&md32, rawString, strLen);
-//    size_t sigLen = BRKeyCompactSign(&key, NULL, 0, md32);
-//    uint8_t compactSig[sigLen];
-//    sigLen = BRKeyCompactSign(&key, compactSig, sizeof(compactSig), md32);
-//    size_t base58len = BRBase58Encode(NULL, 0, compactSig, sigLen);
-//    char base58string[base58len];
-//    BRBase58Encode(base58string, base58len, compactSig, sigLen);
-//    return (*env)->NewStringUTF(env, base58string);
-//}
+JNIEXPORT jboolean JNICALL Java_com_breadwallet_wallet_BRWalletManager_isTestNet(JNIEnv *env,
+                                                                                 jobject thiz) {
+    return BITCOIN_TESTNET ? JNI_TRUE : JNI_FALSE;
+}
 
-//JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_base58ofSha256(
-//        JNIEnv *env,
-//        jobject thiz,
-//        jstring stringToEncode){
-//
-//    const char *rawString = (*env)->GetStringUTFChars(env, stringToEncode, 0);
-//    size_t strLen = (size_t) (*env)->GetStringUTFLength(env, stringToEncode);
-//    UInt256 md32;
-//    BRSHA256(&md32, rawString, strLen);
-//
-//    size_t base58len = BRBase58Encode(NULL, 0, md32.u8, strLen);
-//    char base58string[base58len];
-//    BRBase58Encode(base58string, base58len, md32.u8, strLen);
-//    return (*env)->NewStringUTF(env, base58string);
-//
-//}
+

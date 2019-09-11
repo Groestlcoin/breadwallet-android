@@ -14,6 +14,7 @@ import android.util.Log;
 import com.breadwallet.presenter.activities.MainActivity;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.util.BRConstants;
+import com.platform.BRHTTPHelper;
 import com.platform.GeoLocationManager;
 import com.platform.interfaces.Plugin;
 
@@ -73,14 +74,13 @@ public class GeoLocationPlugin implements Plugin {
                 }
 
                 try {
-                    Log.e(TAG, "run: granted: " + granted);
-
                     if (granted) {
                         globalBaseRequest.setHandled(true);
                         ((HttpServletResponse) continuation.getServletResponse()).setStatus(204);
 
                     } else {
                         try {
+                            Log.e(TAG, "handleGeoPermission: granted is false");
                             globalBaseRequest.setHandled(true);
                             ((HttpServletResponse) continuation.getServletResponse()).sendError(400);
                         } catch (IOException e) {
@@ -98,46 +98,15 @@ public class GeoLocationPlugin implements Plugin {
 
     }
 
-//    public static void handleGeo(String respStr) {
-//        if (continuation == null) {
-//            Log.e(TAG, "handleGeoPermission: WARNING continuation is null");
-//            return;
-//        }
-//
-//        try {
-//            if (respStr != null && !respStr.isEmpty()) {
-//                try {
-//                    continuation.getServletResponse().getWriter().write(respStr);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-//            } else {
-//                Log.e(TAG, "handleGeo: WARNING respStr is null!");
-//            }
-//        } finally {
-//            ((HttpServletResponse) continuation.getServletResponse()).setStatus(204);
-//            continuation.complete();
-//            continuation = null;
-//        }
-//
-//    }
 
     @Override
     public boolean handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
-
         if (target.startsWith("/_permissions/geo")) {
-            Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
             MainActivity app = MainActivity.app;
             if (app == null) {
-                try {
-                    response.sendError(500, "context is null");
-                    baseRequest.setHandled(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+                Log.e(TAG, "handle: context is null: " + target + " " + baseRequest.getMethod());
+                return BRHTTPHelper.handleError(500, "context is null", baseRequest, response);
             }
             switch (request.getMethod()) {
                 // GET /_permissions/geo
@@ -157,35 +126,26 @@ public class GeoLocationPlugin implements Plugin {
                     JSONObject jsonResult = new JSONObject();
                     String status;
                     boolean enabled;
+                    boolean permRequested = SharedPreferencesManager.getGeoPermissionsRequested(app);
                     int permissionCheck = ContextCompat.checkSelfPermission(app, Manifest.permission.ACCESS_FINE_LOCATION);
                     if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                         status = "always";
                         enabled = true;
                     } else {
-                        status = "denied";
+                        Log.e(TAG, "handle: sending permission denied: " + target + " " + baseRequest.getMethod());
+                        status = permRequested ? "denied" : "undetermined";
                         enabled = false;
                     }
                     try {
                         jsonResult.put("status", status);
-                        jsonResult.put("user_queried", SharedPreferencesManager.getGeoPermissionsRequested(app));
+                        jsonResult.put("user_queried", permRequested);
                         jsonResult.put("location_enabled", enabled);
-                        response.setStatus(200);
-                        try {
-                            response.getWriter().write(jsonResult.toString());
-                            baseRequest.setHandled(true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        return BRHTTPHelper.handleSuccess(200, jsonResult.toString().getBytes(), baseRequest, response, null);
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        try {
-                            response.sendError(500);
-                            baseRequest.setHandled(true);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
+                        Log.e(TAG, "handle: failed to send permission status: " + target + " " + baseRequest.getMethod());
+                        return BRHTTPHelper.handleError(500, null, baseRequest, response);
                     }
-                    return true;
                 // POST /_permissions/geo
                 //
                 // Call this method to request the geo permission from the user.
@@ -197,7 +157,7 @@ public class GeoLocationPlugin implements Plugin {
                 case "POST":
                     if (ContextCompat.checkSelfPermission(app, Manifest.permission.ACCESS_FINE_LOCATION)
                             != PackageManager.PERMISSION_GRANTED) {
-
+                        Log.e(TAG, "handle: requesting permissions: " + target + " " + baseRequest.getMethod());
                         ActivityCompat.requestPermissions(app, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, BRConstants.GEO_REQUEST_ID);
                     }
                     SharedPreferencesManager.putGeoPermissionsRequested(app, true);
@@ -208,7 +168,7 @@ public class GeoLocationPlugin implements Plugin {
 
             }
         } else if (target.startsWith("/_geo") && !target.startsWith("/_geosocket")) {
-            Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
             // GET /_geo
             //
             // Calling this method will query CoreLocation for a location object. The returned value may not be returned
@@ -223,36 +183,23 @@ public class GeoLocationPlugin implements Plugin {
             // "timestamp" = "ISO-8601 timestamp of when this location was generated"
             // "horizontal_accuracy" = double
             MainActivity app = MainActivity.app;
-            if (app == null) {
-                try {
-                    response.sendError(500, "context is null");
-                    baseRequest.setHandled(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+            if (app == null) {                    Log.e(TAG, "handle: context is null: " + target + " " + baseRequest.getMethod());
+                return BRHTTPHelper.handleError(500, "context is null", baseRequest, response);
             }
 
             if (request.getMethod().equalsIgnoreCase("GET")) {
                 JSONObject obj = getAuthorizationError(app);
-                if (obj != null) {
-                    try {
-                        response.getWriter().write(obj.toString());
-                        baseRequest.setHandled(true);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
+                if (obj != null) {                        Log.e(TAG, "handle: error getting location: " + obj.toString() + ", " + target + " " + baseRequest.getMethod());
+                    return BRHTTPHelper.handleError(500, obj.toString(), baseRequest, response);
                 }
 
                 continuation = ContinuationSupport.getContinuation(request);
                 continuation.suspend(response);
                 GeoLocationManager.getInstance().getOneTimeGeoLocation(continuation, baseRequest);
-                Log.e(TAG, "handle: suspended the request");
                 return true;
             }
         } else if (target.startsWith("/_geosocket")) {
-            Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
             // GET /_geosocket
             //
             // This opens up a websocket to the location manager. It will return a new location every so often (but with no

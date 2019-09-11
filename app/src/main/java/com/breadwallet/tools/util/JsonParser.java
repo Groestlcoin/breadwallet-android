@@ -10,6 +10,8 @@ import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.wallet.BRWalletManager;
 import com.google.firebase.crash.FirebaseCrash;
 
+//import junit.framework.Assert;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +25,8 @@ import java.util.Date;
 import java.util.Locale;
 
 import static com.breadwallet.tools.util.BRConstants.DEFAULT_FEE_PER_KB;
+
+import static android.R.attr.data;
 
 /**
  * BreadWallet
@@ -133,14 +137,13 @@ public class JsonParser {
                     e.printStackTrace();
                 }
             }
-            int stringId = 0;
-            String appName = "";
-            if (app != null) {
-                stringId = app.getApplicationInfo().labelRes;
-                appName = app.getString(stringId);
-            }
-            String message = String.format(Locale.getDefault(), "%s/%d/%s", appName.isEmpty() ? "groestlwallet" : appName, versionNumber, System.getProperty("http.agent"));
-            Log.e(TAG, "user agent: " + message);
+//            int stringId = 0;
+            String appName = "Groestlwallet";
+//            if (app != null) {
+//                stringId = app.getApplicationInfo().labelRes;
+//                appName = app.getString(stringId);
+//            }
+            String message = String.format(Locale.getDefault(), "%s/%d/%s", appName, versionNumber, System.getProperty("http.agent"));
             urlConn.setRequestProperty("User-agent", message);
             urlConn.setReadTimeout(60 * 1000);
 
@@ -152,7 +155,7 @@ public class JsonParser {
             } else {
                 @SuppressWarnings("deprecation") long date = Date.parse(strDate) / 1000;
                 SharedPreferencesManager.putSecureTime(app, date);
-                Log.e(TAG, "Secure time set to: " + date);
+               // org.junit.Assert.assertTrue(date != 0);
             }
 
             if (urlConn.getInputStream() != null) {

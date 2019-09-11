@@ -2,11 +2,15 @@ package com.platform;
 
 import android.app.Activity;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.net.Uri;
 import android.util.Log;
 
 import com.breadwallet.BuildConfig;
+import com.breadwallet.R;
 import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.tools.crypto.Base58;
 import com.breadwallet.tools.manager.SharedPreferencesManager;
 import com.breadwallet.tools.crypto.CryptoHelper;
 import com.breadwallet.tools.security.KeyStoreManager;
@@ -55,7 +59,10 @@ import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.BufferedSink;
 
+import static android.R.attr.key;
 import static android.R.attr.path;
+import static com.breadwallet.R.string.request;
+import static com.breadwallet.R.string.rescan;
 import static com.breadwallet.tools.util.BRCompressor.gZipExtract;
 
 
@@ -107,7 +114,7 @@ public class APIClient {
 
     public static final String BUNDLES = "bundles";
     //    public static final String BREAD_BUY = "bread-buy-staging";
-    public static String BREAD_BUY = "bread-buy";
+    public static String BREAD_BUY = "bread-buy-staging";
 
     public static String bundlesFileName = String.format("/%s", BUNDLES);
     public static String bundleFileName = String.format("/%s/%s.tar", BUNDLES, BREAD_BUY);
@@ -163,7 +170,7 @@ public class APIClient {
             Request request = new Request.Builder().url(strUtl).get().build();
             String body = null;
             try {
-                Response response = sendRequest(request, false);
+                Response response = sendRequest(request, false, 0);
                 body = response.body().string();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -189,10 +196,10 @@ public class APIClient {
         String response = null;
         Response res = null;
         try {
-            res = sendRequest(request, true);
+            res = sendRequest(request, true, 0);
             response = res.body().string();
             if (response.isEmpty()) {
-                res = sendRequest(request, true);
+                res = sendRequest(request, true, 0);
                 response = res.body().string();
             }
         } catch (IOException e) {
@@ -226,13 +233,16 @@ public class APIClient {
             String strResponse = null;
             Response response;
             try {
-                response = sendRequest(request, false);
+                response = sendRequest(request, false, 0);
                 if (response != null)
                     strResponse = response.body().string();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (strResponse == null) return null;
+            if (Utils.isNullOrEmpty(strResponse)) {
+                Log.e(TAG, "getToken: retrieving token failed");
+                return null;
+            }
             JSONObject obj = null;
             obj = new JSONObject(strResponse);
             String token = obj.getString("token");
@@ -255,29 +265,25 @@ public class APIClient {
     }
 
     public String signRequest(String request) {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
-        byte[] sha256First = digest.digest(request.getBytes(StandardCharsets.UTF_8));
-        byte[] sha256Second = digest.digest(sha256First);
+        byte[] doubleSha256 = CryptoHelper.doubleSha256(request.getBytes(StandardCharsets.UTF_8));
         BRKey key = new BRKey(KeyStoreManager.getAuthKey(ctx));
-        byte[] signedBytes = key.compactSign(sha256Second);
-        return BRBase58.getInstance().base58Encode(signedBytes);
+        byte[] signedBytes = key.compactSign(doubleSha256);
+        return Base58.encode(signedBytes);
 
     }
 
-    public Response sendRequest(Request request, boolean needsAuth) {
+    public Response sendRequest(Request locRequest, boolean needsAuth, int retryCount) {
+        if (retryCount > 1)
+            throw new RuntimeException("sendRequest: Warning retryCount is: " + retryCount);
+        boolean isTestVersion = BREAD_BUY.equalsIgnoreCase("bread-buy-staging");
+        boolean isTestNet = BuildConfig.BITCOIN_TESTNET;
+        Request request = locRequest.newBuilder().header("X-Testflight", isTestVersion ? "1" : "0").header("X-Bitcoin-Testnet", isTestNet ? "1" : "0").build();
         if (needsAuth) {
             Request.Builder modifiedRequest = request.newBuilder();
             String base58Body = "";
             RequestBody body = request.body();
             try {
                 if (body != null && body.contentLength() != 0) {
-                    //                Log.e(TAG, "sendRequest: body is not null: " + body);
                     BufferedSink sink = new Buffer();
                     try {
                         body.writeTo(sink);
@@ -302,9 +308,7 @@ public class APIClient {
             String requestString = createRequest(request.method(), base58Body,
                     request.header("Content-Type"), request.header("Date"), request.url().encodedPath()
                             + ((queryString != null && !queryString.isEmpty()) ? ("?" + queryString) : ""));
-//            Log.e(TAG, "sendRequest: requestString: " + requestString);
             String signedRequest = signRequest(requestString);
-//            Log.e(TAG, "sendRequest: signedRequest: " + signedRequest);
             String token = new String(KeyStoreManager.getToken(ctx));
             if (token.isEmpty()) token = getToken();
             if (token == null || token.isEmpty()) {
@@ -314,23 +318,40 @@ public class APIClient {
             String authValue = "bread " + token + ":" + signedRequest;
 //            Log.e(TAG, "sendRequest: authValue: " + authValue);
             modifiedRequest = request.newBuilder();
+
             request = modifiedRequest.header("Authorization", authValue).build();
 
         }
         Response response = null;
+        byte[] data = new byte[0];
         try {
-            OkHttpClient client = new OkHttpClient.Builder()/*.addInterceptor(new LoggingInterceptor())*/.build();
+            OkHttpClient client = new OkHttpClient.Builder().followRedirects(false)/*.addInterceptor(new LoggingInterceptor())*/.build();
+//            Log.e(TAG, "sendRequest: before executing the request: " + request.headers().toString());
             response = client.newCall(request).execute();
-//            Log.e(TAG, "sendRequest: date: " + response.header("Date"));
+            try {
+                data = response.body().bytes();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!response.isSuccessful())
+                Log.e(TAG, "sendRequest: " + String.format(Locale.getDefault(), "url (%s), code (%d), mess (%s), body (%s)",
+                        request.url(), response.code(), response.message(), new String(data)));
+            if (response.isRedirect()) {
+                String newLocation = request.url().scheme() + "://" + request.url().host() + response.header("location");
+                Uri newUri = Uri.parse(newLocation);
+                if (newUri == null) {
+                    Log.e(TAG, "sendRequest: redirect uri is null");
+                } else if (!newUri.getHost().equalsIgnoreCase(HOST)  || !newUri.getScheme().equalsIgnoreCase(PROTO)) {
+                    Log.e(TAG, "sendRequest: WARNING: redirect is NOT safe: " + newLocation);
+                } else {
+                    Log.w(TAG, "redirecting: " + request.url() + " >>> " + newLocation);
+                    return sendRequest(new Request.Builder().url(newLocation).get().build(), needsAuth, 0);
+                }
+                return new Response.Builder().code(500).request(request).body(ResponseBody.create(null, new byte[0])).protocol(Protocol.HTTP_1_1).build();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return new Response.Builder().code(599).request(request).body(ResponseBody.create(null, new byte[0])).protocol(Protocol.HTTP_1_1).build();
-        }
-        byte[] data = new byte[0];
-        try {
-            data = response.body().bytes();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         if (response.header("content-encoding") != null && response.header("content-encoding").equalsIgnoreCase("gzip")) {
@@ -343,9 +364,10 @@ public class APIClient {
         ResponseBody postReqBody = ResponseBody.create(null, data);
         if (needsAuth && isBreadChallenge(response)) {
             Log.e(TAG, "sendRequest: got authentication challenge from API - will attempt to get token");
-            String token = getToken();
-            //todo finish
-
+            getToken();
+            if (retryCount < 1) {
+                sendRequest(request, true, retryCount + 1);
+            }
         }
 
         return response.newBuilder().body(postReqBody).build();
@@ -366,14 +388,8 @@ public class APIClient {
 
             String latestVersion = getLatestVersion();
             String currentTarVersion = null;
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-                return;
-            }
-            byte[] hash = digest.digest(bFile);
+            byte[] hash = CryptoHelper.sha256(bFile);
+
             currentTarVersion = Utils.bytesToHex(hash);
             Log.e(TAG, "updateBundle: version of the current tar: " + currentTarVersion);
 
@@ -388,7 +404,7 @@ public class APIClient {
 
                 }
             } else {
-                Log.d(TAG, "updateBundle: latestVersion is: " + latestVersion);
+                Log.d(TAG, "updateBundle: latestVersion is null");
             }
 
         } else {
@@ -398,7 +414,7 @@ public class APIClient {
                     .url(String.format("%s/assets/bundles/%s/download", BASE_URL, BREAD_BUY))
                     .get().build();
             Response response = null;
-            response = sendRequest(request, false);
+            response = sendRequest(request, false, 0);
             Log.d(TAG, "updateBundle: Downloaded, took: " + (System.currentTimeMillis() - startTime));
             writeBundleToFile(response, bundleFile);
 
@@ -414,7 +430,7 @@ public class APIClient {
             response = sendRequest(new Request.Builder()
                     .get()
                     .url(String.format("%s/assets/bundles/%s/versions", BASE_URL, BREAD_BUY))
-                    .build(), false).body().string();
+                    .build(), false, 0).body().string();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -436,7 +452,7 @@ public class APIClient {
         Request diffRequest = new Request.Builder()
                 .url(String.format("%s/assets/bundles/%s/diff/%s", BASE_URL, BREAD_BUY, currentTarVersion))
                 .get().build();
-        Response diffResponse = sendRequest(diffRequest, false);
+        Response diffResponse = sendRequest(diffRequest, false, 0);
         File patchFile = null;
         File tempFile = null;
         byte[] patchBytes = null;
@@ -451,7 +467,6 @@ public class APIClient {
             FileUI.diff(bundleFile, tempFile, patchFile, compression);
 
             byte[] updatedBundleBytes = IOUtils.toByteArray(new FileInputStream(tempFile));
-
             FileUtils.writeByteArrayToFile(bundleFile, updatedBundleBytes);
 
         } catch (IOException | InvalidHeaderException | CompressorException | NullPointerException e) {
@@ -491,11 +506,7 @@ public class APIClient {
     }
 
     public boolean tryExtractTar(File inputFile) {
-
-        String extractFolderName = MainActivity.app.getFilesDir() + "/" + BUNDLES + "/" + extractedFolder;
-        File temp = new File(extractFolderName);
-        temp.mkdirs();
-//        Log.e(TAG, String.format("Untaring %s to dir name %s.", inputFile.getAbsolutePath(), extractedFolder));
+        String extractFolderName = MainActivity.app.getFilesDir().getAbsolutePath() + bundlesFileName + "/" + extractedFolder;
         boolean result = false;
         TarArchiveInputStream debInputStream = null;
         try {
@@ -503,28 +514,16 @@ public class APIClient {
             debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
             TarArchiveEntry entry = null;
             while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
-//                Log.e(TAG, "tryExtractTar: entry.getName(): " + entry.getName());
 
                 final String outPutFileName = entry.getName().replace("./", "");
                 final File outputFile = new File(extractFolderName, outPutFileName);
-                String outPutFileFullPath = extractFolderName + "/" + outPutFileName;
-                if (entry.isDirectory()) {
-//                    Log.e(TAG, String.format("Attempting to write output directory %s.", outputFile.getAbsolutePath()));
-
-                    File newDir = new File(outPutFileFullPath);
-                    if (!newDir.exists()) {
-                        newDir.mkdirs();
-                    }
-                } else {
-//                    Log.e(TAG, String.format("Creating output file %s", outputFile.getAbsolutePath()));
-                    final OutputStream outputFileStream = new FileOutputStream(outPutFileFullPath);
-                    IOUtils.copy(debInputStream, outputFileStream);
-                    outputFileStream.close();
+                if (!entry.isDirectory()) {
+                    FileUtils.writeByteArrayToFile(outputFile, org.apache.commons.compress.utils.IOUtils.toByteArray(debInputStream));
                 }
             }
 
             result = true;
-        } catch (ArchiveException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
@@ -543,14 +542,14 @@ public class APIClient {
         Request req = new Request.Builder()
                 .url(buildUrl(furl))
                 .get().build();
-        Response res = sendRequest(req, true);
+        Response res = sendRequest(req, true, 0);
         if (res == null) {
             Log.e(TAG, "updateFeatureFlag: error fetching features");
             return;
         }
 
         if (!res.isSuccessful()) {
-            Log.e(TAG, "updateFeatureFlag: request was unsuccessful");
+            Log.e(TAG, "updateFeatureFlag: request was unsuccessful: " + res.code() + ":" + res.message());
             return;
         }
 

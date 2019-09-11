@@ -3,21 +3,32 @@ package com.platform.middlewares;
 import android.util.Log;
 
 import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.tools.crypto.CryptoHelper;
 import com.breadwallet.tools.util.TypesConverter;
+import com.breadwallet.tools.util.Utils;
+import com.platform.BRHTTPHelper;
 import com.platform.interfaces.Middleware;
 
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.server.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import okhttp3.Request;
+
+import static android.R.attr.baseline;
+import static android.R.attr.handle;
 import static com.platform.APIClient.BUNDLES;
 import static com.platform.APIClient.extractedFolder;
 
@@ -53,8 +64,7 @@ public class HTTPFileMiddleware implements Middleware {
     public boolean handle(String target, org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         if (target.equals("/")) return false;
         if (target.equals("/favicon.ico")) {
-            baseRequest.setHandled(true);
-            return true;
+            return BRHTTPHelper.handleSuccess(200, null, baseRequest, response, null);
         }
 
         String requestedFile = MainActivity.app.getFilesDir() + "/" + BUNDLES + "/" + extractedFolder + target;
@@ -62,41 +72,82 @@ public class HTTPFileMiddleware implements Middleware {
         if (!temp.exists()) {
             return false;
         }
-        Log.e(TAG, "handling: " + target + " " + baseRequest.getMethod());
+        Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
         boolean modified = true;
-        StringBuilder sb = new StringBuilder();
-        try {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            byte[] md5 = digest.digest(TypesConverter.long2byteArray(temp.lastModified()));
-
-            for (byte b : md5) {
-                sb.append(String.format("%02X", b));
-            }
-            response.setHeader("ETag", sb.toString());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            throw new RuntimeException("should not throw");
-        }
-        if (sb.toString().isEmpty()) throw new RuntimeException("can't happen");
+        byte[] md5 = CryptoHelper.md5(TypesConverter.long2byteArray(temp.lastModified()));
+        String hexEtag = Utils.bytesToHex(md5);
+        response.setHeader("ETag", hexEtag);
 
         // if the client sends an if-none-match header, determine if we have a newer version of the file
         String etag = request.getHeader("if-none-match");
-        if (etag != null && etag.equalsIgnoreCase(sb.toString())) modified = false;
-        response.setContentType(detectContentType(temp));
-//        if (modified) {
+        if (etag != null && etag.equalsIgnoreCase(hexEtag)) modified = false;
+
+        byte[] body = null;
+        if (modified) {
             try {
-                response.setStatus(200);
-                response.getOutputStream().write(FileUtils.readFileToByteArray(temp));
-                baseRequest.setHandled(true);
+                body = FileUtils.readFileToByteArray(temp);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            if (body == null) {
+                return BRHTTPHelper.handleError(400, "could not read the file", baseRequest, response);
+            }
+        } else {
+            return BRHTTPHelper.handleSuccess(304, null, baseRequest, response, null);
+        }
+        response.setContentType(detectContentType(temp));
+
+
+        String rangeString = request.getHeader("range");
+        if (!Utils.isNullOrEmpty(rangeString)) {
+            // Range header should match format "bytes=n-n,n-n,n-n...". If not, then return 416.
+            return handlePartialRequest(baseRequest, response, temp);
+        } else {
+            return BRHTTPHelper.handleSuccess(200, body, baseRequest, response, null);
+        }
+    }
+
+    private boolean handlePartialRequest(org.eclipse.jetty.server.Request request, HttpServletResponse response, File file) {
+        try {
+            String rangeHeader = request.getHeader("range");
+            String rangeValue = rangeHeader.trim()
+                    .substring("bytes=".length());
+            int fileLength = (int) file.length();
+            int start, end;
+            if (rangeValue.startsWith("-")) {
+                end = fileLength - 1;
+                start = fileLength - 1
+                        - Integer.parseInt(rangeValue.substring("-".length()));
+            } else {
+                String[] range = rangeValue.split("-");
+                start = Integer.parseInt(range[0]);
+                end = range.length > 1 ? Integer.parseInt(range[1])
+                        : fileLength - 1;
+            }
+            if (end > fileLength - 1) {
+                end = fileLength - 1;
+            }
+            if (start <= end) {
+                int contentLength = end - start + 1;
+                response.setHeader("Content-Length", contentLength + "");
+                response.setHeader("Content-Range", "bytes " + start + "-"
+                        + end + "/" + fileLength);
+                byte[] respBody = Arrays.copyOfRange(FileUtils.readFileToByteArray(file), start, contentLength);
+                return BRHTTPHelper.handleSuccess(206, respBody, request, response, detectContentType(file));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                request.setHandled(true);
+                response.getWriter().write("Invalid Range Header");
+                response.sendError(400, "Bad Request");
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
             return true;
-//        } else {
-//            response.setStatus(304);
-//            return true;
-//        }
-        //todo finish the implementation
+        }
+        return BRHTTPHelper.handleError(500, "unknown error", request, response);
     }
 
     private String detectContentType(File file) {

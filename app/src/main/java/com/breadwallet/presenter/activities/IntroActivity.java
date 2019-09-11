@@ -35,13 +35,7 @@ import com.breadwallet.tools.security.KeyStoreManager;
 import com.breadwallet.tools.security.PostAuthenticationProcessor;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.BRWalletManager;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 /**
  * BreadWallet
@@ -80,6 +74,7 @@ public class IntroActivity extends FragmentActivity {
     //loading the native library
     static {
         System.loadLibrary("core");
+
     }
 
     private boolean backNotAllowed = false;
@@ -100,6 +95,7 @@ public class IntroActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
+//        BreadLibs.initNativeLib(this, "libCore.so");
         app = this;
 
         if (!BuildConfig.DEBUG && KeyStoreManager.AUTH_DURATION_SEC != 300) {
@@ -108,8 +104,8 @@ public class IntroActivity extends FragmentActivity {
             FirebaseCrash.report(ex);
             throw ex;
         }
-        FirebaseCrash.log("intro test log");
-        FirebaseCrash.report(new RuntimeException("intro test exception"));
+
+        KeyStoreManager.putLastPasscodeUsedTime(System.currentTimeMillis(), this);
 
         getWindowManager().getDefaultDisplay().getSize(screenParametersPoint);
         leftButton = (Button) findViewById(R.id.intro_left_button);
@@ -121,8 +117,12 @@ public class IntroActivity extends FragmentActivity {
                 onBackPressed();
             }
         });
-
-        byte[] masterPubKey = KeyStoreManager.getMasterPublicKey(this);
+        byte[] masterPubKey;
+        try {
+            masterPubKey = KeyStoreManager.getMasterPublicKey(this);
+        } catch (Exception e) {
+            return;
+        }
         boolean isFirstAddressCorrect = false;
         if (masterPubKey != null && masterPubKey.length != 0) {
             isFirstAddressCorrect = checkFirstAddress(masterPubKey);
@@ -178,7 +178,8 @@ public class IntroActivity extends FragmentActivity {
         for (Fragment f : fragments) {
             fragmentTransaction.show(f);
         }
-        fragmentTransaction.commitAllowingStateLoss();
+        if (!isDestroyed())
+            fragmentTransaction.commitAllowingStateLoss();
     }
 
     private void setStatusBarColor(int mode) {
@@ -194,7 +195,6 @@ public class IntroActivity extends FragmentActivity {
             window.setStatusBarColor(getColor(R.color.warning_status_bar));
         }
     }
-
 
     public boolean checkFirstAddress(byte[] mpk) {
         String addressFromPrefs = SharedPreferencesManager.getFirstAddress(this);

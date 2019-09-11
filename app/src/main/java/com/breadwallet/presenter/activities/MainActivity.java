@@ -32,9 +32,13 @@ import android.widget.ViewFlipper;
 import com.breadwallet.R;
 import com.breadwallet.BreadWalletApp;
 import com.breadwallet.presenter.customviews.BubbleTextView;
+import com.breadwallet.presenter.entities.BRMerkleBlockEntity;
+import com.breadwallet.presenter.entities.BlockEntity;
 import com.breadwallet.presenter.fragments.FragmentScanResult;
 import com.breadwallet.presenter.fragments.FragmentSettings;
 import com.breadwallet.tools.animation.BRAnimator;
+import com.breadwallet.tools.sqlite.SQLiteManager;
+import com.breadwallet.tools.sqlite.TransactionDataSource;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.manager.CurrencyManager;
 import com.breadwallet.tools.util.NetworkChangeReceiver;
@@ -50,6 +54,7 @@ import com.breadwallet.tools.security.KeyStoreManager;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.BRPeerManager;
 import com.breadwallet.wallet.BRWalletManager;
+import com.breadwallet.wallet.BreadLibs;
 import com.google.firebase.crash.FirebaseCrash;
 import com.platform.APIClient;
 import com.platform.middlewares.plugins.CameraPlugin;
@@ -123,8 +128,10 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     public static boolean appInBackground = false;
 
+    //loading the native library
     static {
         System.loadLibrary("core");
+
     }
 
     @Override
@@ -132,13 +139,11 @@ public class MainActivity extends FragmentActivity implements Observer {
 //        if (savedInstanceState != null)
 //            savedInstanceState.clear();
         super.onCreate(null);
+//        BreadLibs.initNativeLib(this, "libCore.so");
 
         setContentView(R.layout.activity_main);
         app = this;
         initializeViews();
-
-        FirebaseCrash.log("test log");
-        FirebaseCrash.report(new RuntimeException("test exception"));
 
         Utils.printPhoneSpecs();
 
@@ -148,7 +153,7 @@ public class MainActivity extends FragmentActivity implements Observer {
 
         if (Utils.isEmulatorOrDebug(this)) {
             MODE = BRConstants.DEBUG;
-            Log.e(TAG, "DEBUG MODE!");
+            Log.i(TAG, "DEBUG MODE!");
         }
 
         setListeners();
@@ -177,12 +182,9 @@ public class MainActivity extends FragmentActivity implements Observer {
         Uri data = intent.getData();
         if (data == null) return;
         String scheme = data.getScheme();
-        if (scheme != null && scheme.startsWith("groestlcoin")) {
-            Log.e(TAG, "groestlcoin url");
+        if (scheme != null && (scheme.startsWith("groestlcoin"))) {
             String str = intent.getDataString();
             RequestHandler.processRequest(this, str);
-        } else {
-            Log.e(TAG, "No groestlcoin url");
         }
     }
 
@@ -352,7 +354,7 @@ public class MainActivity extends FragmentActivity implements Observer {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                BRWalletManager.getInstance(app).setUpTheWallet();
+                BRWalletManager.getInstance(app).setUpTheWallet(MainActivity.this);
             }
         }).start();
 
@@ -383,7 +385,7 @@ public class MainActivity extends FragmentActivity implements Observer {
             public void run() {
                 if (SharedPreferencesManager.getPhraseWroteDown(app)) return;
                 long balance = CurrencyManager.getInstance(app).getBALANCE();
-                long limit = SharedPreferencesManager.getLimit(app);
+                int limit = SharedPreferencesManager.getLimit(app);
                 if (balance > limit)
                     BRWalletManager.getInstance(app).animateSavePhraseFlow();
             }
@@ -396,13 +398,13 @@ public class MainActivity extends FragmentActivity implements Observer {
     protected void onPause() {
         super.onPause();
         appInBackground = true;
+        CurrencyManager.getInstance(this).stopTimerTask();
         startStopReceiver(false);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        CurrencyManager.getInstance(this).stopTimerTask();
 
     }
 
@@ -411,11 +413,13 @@ public class MainActivity extends FragmentActivity implements Observer {
         super.onDestroy();
         finish();
         BRAnimator.level = 0;
-        CurrencyManager.getInstance(this).stopTimerTask();
+
         unregisterScreenLockReceiver();
         //sync the kv stores
         if (PLATFORM_ON)
             APIClient.getInstance(this).syncKvStore();
+
+        BRWalletManager.getInstance(this).setWalletCreated(false);
 
     }
 
@@ -517,11 +521,9 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     public void setPagerIndicator(int x) {
         if (x == 0) {
-//            Log.d(TAG, "Left Indicator changed");
             BRAnimator.scaleView(pageIndicatorLeft, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP);
             BRAnimator.scaleView(pageIndicatorRight, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f);
         } else if (x == 1) {
-//            Log.d(TAG, "Right Indicator changed");
             BRAnimator.scaleView(pageIndicatorRight, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP);
             BRAnimator.scaleView(pageIndicatorLeft, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f, BRConstants.PAGE_INDICATOR_SCALE_UP, 1f);
         } else {
@@ -576,35 +578,42 @@ public class MainActivity extends FragmentActivity implements Observer {
 
     public void request(View view) {
         SpringAnimator.showAnimation(view);
-        Intent intent;
-        String tempAmount = FragmentScanResult.instance.getBitcoinValue().value;
-        BRWalletManager m = BRWalletManager.getInstance(this);
-        int unit = BRConstants.CURRENT_UNIT_BITCOINS;//BRConstants.CURRENT_UNIT_BITS;
-        Activity context = MainActivity.app;
-        String divideBy = "100";
-        if (context != null)
-            unit = SharedPreferencesManager.getCurrencyUnit(context);
-        if (unit == BRConstants.CURRENT_UNIT_MBITS) divideBy = "100000";
-        if (unit == BRConstants.CURRENT_UNIT_BITCOINS) divideBy = "100000000";
-        long minAmount = m.getMinOutputAmount();
-        if (new BigDecimal(tempAmount).multiply(new BigDecimal(divideBy)).doubleValue() < minAmount) {
-            String placeHolder = BRConstants.bitcoinLowercase + new BigDecimal(minAmount).divide(new BigDecimal(divideBy)).toString();
-            final String bitcoinMinMessage = String.format(Locale.getDefault(), getString(R.string.bitcoin_payment_cant_be_less), placeHolder);
-            ((BreadWalletApp) getApplication()).showCustomDialog(getString(R.string.amount_too_small),
-                    bitcoinMinMessage, getString(R.string.ok));
-            return;
-        }
-        String divideByForIntent = "1000000";
-        if (unit == BRConstants.CURRENT_UNIT_MBITS) divideByForIntent = "1000";
-        if (unit == BRConstants.CURRENT_UNIT_BITCOINS) divideByForIntent = "1";
-        String strAmount = String.valueOf(new BigDecimal(tempAmount).divide(new BigDecimal(divideByForIntent)).toString());
-        String address = SharedPreferencesManager.getReceiveAddress(this);
-        intent = new Intent(this, RequestQRActivity.class);
-        intent.putExtra(BRConstants.INTENT_EXTRA_REQUEST_AMOUNT, strAmount);
-        intent.putExtra(BRConstants.INTENT_EXTRA_REQUEST_ADDRESS, address);
-        startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        BRAnimator.hideScanResultFragment();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent;
+                String tempAmount = FragmentScanResult.instance.getBitcoinValue().value;
+                BRWalletManager m = BRWalletManager.getInstance(MainActivity.this);
+                int unit = BRConstants.CURRENT_UNIT_BITS;
+                Activity context = MainActivity.app;
+                String divideBy = "100";
+                if (context != null)
+                    unit = SharedPreferencesManager.getCurrencyUnit(context);
+                if (unit == BRConstants.CURRENT_UNIT_MBITS) divideBy = "100000";
+                if (unit == BRConstants.CURRENT_UNIT_BITCOINS) divideBy = "100000000";
+
+                long minAmount = m.getMinOutputAmount();
+                if (new BigDecimal(tempAmount).multiply(new BigDecimal(divideBy)).doubleValue() < minAmount) {
+                    String placeHolder = BRConstants.bitcoinLowercase + new BigDecimal(minAmount).divide(new BigDecimal(divideBy)).toString();
+                    final String bitcoinMinMessage = String.format(Locale.getDefault(), getString(R.string.bitcoin_payment_cant_be_less), placeHolder);
+                    ((BreadWalletApp) getApplication()).showCustomDialog(getString(R.string.amount_too_small),
+                            bitcoinMinMessage, getString(R.string.ok));
+                    return;
+                }
+                String divideByForIntent = "1000000";
+                if (unit == BRConstants.CURRENT_UNIT_MBITS) divideByForIntent = "1000";
+                if (unit == BRConstants.CURRENT_UNIT_BITCOINS) divideByForIntent = "1";
+                String strAmount = String.valueOf(new BigDecimal(tempAmount).divide(new BigDecimal(divideByForIntent)).toString());
+                String address = SharedPreferencesManager.getReceiveAddress(MainActivity.this);
+                intent = new Intent(MainActivity.this, RequestQRActivity.class);
+                intent.putExtra(BRConstants.INTENT_EXTRA_REQUEST_AMOUNT, strAmount);
+                intent.putExtra(BRConstants.INTENT_EXTRA_REQUEST_ADDRESS, address);
+                startActivity(intent);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                BRAnimator.hideScanResultFragment();
+            }
+        }).start();
+
     }
 
     @Override
@@ -627,6 +636,11 @@ public class MainActivity extends FragmentActivity implements Observer {
                     CameraPlugin.handleCameraImageTaken(this, imageBitmap);
                 } else {
                     CameraPlugin.handleCameraImageTaken(this, null);
+                }
+                break;
+            case BRConstants.REQUEST_PHRASE_BITID:
+                if (resultCode == RESULT_OK) {
+                    RequestHandler.processBitIdResponse(this);
                 }
                 break;
 

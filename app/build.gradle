@@ -10,17 +10,21 @@ model {
             applicationId = 'hashengineering.groestlcoin.groestlwallet'
             minSdkVersion.apiLevel = 23
             targetSdkVersion.apiLevel = 25
-            versionCode = 364
-            versionName = "36.3"
+            versionCode = 830
+            versionName = "83"
         }
 
         ndk {
             platformVersion = "23"
+            abiFilters.addAll(['x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a'])
+
             moduleName = "core"
             toolchain = "clang"
+
             CFlags.addAll(['-std=c99', '-g', '-DBITCOIN_TESTNET=0', '-I' + file('src/main/secp/secp256k1/include'),
                            '-I' + file('src/main/secp/secp256k1'), '-I' + file('src/main/secp'), '-I' + file('src/main/jni/breadwallet-core'),
-                           '-I' + file('src/main/jni/transition'), '-Wno-trigraphs', '-Wmissing', '-Wno-missing-prototypes', '-Werror=return-type',
+                           '-I' + file('src/main/jni/transition'), '-Wno-trigraphs', /**'-Wmissing',*/
+                           '-Wno-missing-prototypes', '-Werror=return-type',
                            '-Wdocumentation', '-Wunreachable-code-aggressive', '-Wno-missing-braces', '-Wparentheses', '-Wswitch', '-Wno-unused-function',
                            '-Wunused-label', '-Wno-unused-parameter', '-Wunused-variable', '-Wunused-value', '-Wempty-body',
                            '-Wconditional-uninitialized', '-Wno-unknown-pragmas', '-pedantic', '-Wshadow', '-Wfour-char-constants',
@@ -28,7 +32,6 @@ model {
                            '-Wassign-enum', '-Wno-shorten-64-to-32', '-Wpointer-sign', '-Wnewline-eof', '-Wdeprecated-declarations', '-Wno-sign-conversion', '-DBITCOIN_TEST_NO_MAIN'])
             ldLibs.addAll(['android', 'log'])
             stl = 'gnustl_static'
-            //stl = 'stlport_static'
         }
 
         lintOptions.with {
@@ -49,6 +52,13 @@ model {
                 proguardFiles.add(file('proguard-rules.pro'))
                 minifyEnabled = false
                 debuggable = false
+                buildConfigFields.with {
+                    create() {
+                        type = "boolean"
+                        name = "BITCOIN_TESTNET"
+                        value = "false"
+                    }
+                }
                 ndk {
                     CFlags.addAll(['-DBITCOIN_TESTNET=0'])
                     minifyEnabled = false
@@ -59,6 +69,13 @@ model {
                 proguardFiles.add(file('proguard-rules.pro'))
                 debuggable = true
                 minifyEnabled = false
+                buildConfigFields.with {
+                    create() {
+                        type = "boolean"
+                        name = "BITCOIN_TESTNET"
+                        value = "false"
+                    }
+                }
                 ndk {
                     //CFlags.addAll(['-DBITCOIN_TESTNET=1'])
                     minifyEnabled = false
@@ -90,14 +107,17 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:28.0.0'
     compile 'com.android.support:support-v13:28.0.0'
+    compile 'com.android.support:support-compat:28.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.google.firebase:firebase-core:10.0.1'
     compile 'com.google.firebase:firebase-crash:10.0.1'
+    compile 'com.android.support:animated-vector-drawable:28.0.0'
     compile 'io.sigpipe:jbsdiff:1.0'
     androidTestCompile 'com.android.support:support-annotations:28.0.0'
+    androidTestCompile 'com.android.support:support-v13:28.0.0'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
-    compile 'junit:junit:4.12'
+    androidTestCompile 'junit:junit:4.12'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
 }
 apply plugin: 'com.google.gms.google-services'

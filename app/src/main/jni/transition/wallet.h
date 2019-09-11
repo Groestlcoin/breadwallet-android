@@ -196,15 +196,8 @@ JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_getSeedFro
         jobject thiz,
         jbyteArray phrase);
 
-//JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_signString(
-//        JNIEnv *env,
-//        jobject thiz,
-//        jstring stringToSign, jbyteArray privKey);
-
-//JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_base58ofSha256(
-//        JNIEnv *env,
-//        jobject thiz,
-//        jstring stringToEncode);
+JNIEXPORT jboolean JNICALL Java_com_breadwallet_wallet_BRWalletManager_isTestNet(JNIEnv *env,
+                                                                                 jobject thiz);
 
 #ifdef __cplusplus
 }
