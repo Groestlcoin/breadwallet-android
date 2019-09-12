@@ -29,6 +29,8 @@
 #include "BRBase58.h"
 #include <assert.h>
 #include <BRBIP38Key.h>
+#include <BRInt.h>
+#include <BRTransaction.h>
 
 static JavaVM *_jvmW;
 BRWallet *_wallet;
@@ -37,6 +39,12 @@ static BRTransaction *_privKeyTx;
 static uint64_t _privKeyBalance;
 static size_t _transactionsCounter = 0;
 jclass _walletManagerClass;
+
+//#if BITCOIN_TESTNET
+//#error don't know bcash testnet fork height
+//#else // mainnet
+#define BCASH_FORKHEIGHT 478559
+//#endif
 
 static JNIEnv *getEnv() {
     __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getEnv Wallet");
@@ -55,6 +63,8 @@ static JNIEnv *getEnv() {
 
 //callback for tx publishing
 void callback(void *info, int error) {
+    __android_log_print(ANDROID_LOG_ERROR, "Message from callback: ", "err: %s",
+                        strerror(error));
     JNIEnv *env = getEnv();
 
     if (!env || _walletManagerClass == NULL) return;
@@ -230,6 +240,8 @@ Java_com_breadwallet_wallet_BRWalletManager_createWallet(JNIEnv *env, jobject th
     BRWallet *w;
 
     if (txCount > 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "Message from C: ",
+                            "BRWalletNew with tx nr: %zu", sizeof(_transactions));
         w = BRWalletNew(_transactions, txCount, pubKey);
         _transactionsCounter = 0;
 
@@ -299,6 +311,7 @@ Java_com_breadwallet_wallet_BRWalletManager_putTransaction(JNIEnv *env, jobject 
 //                        tmpTx->timestamp);
 //    __android_log_print(ANDROID_LOG_ERROR, "Message from C: ", "tmpTx: %s", u256_hex_encode(tmpTx->txHash));
     _transactions[_transactionsCounter++] = tmpTx;
+
 }
 
 JNIEXPORT void JNICALL
@@ -308,7 +321,6 @@ Java_com_breadwallet_wallet_BRWalletManager_createTxArrayWithCount(JNIEnv *env, 
                         txCount);
     _transactions = calloc((size_t) txCount, sizeof(*_transactions));
     _transactionsCounter = 0;
-
     // need to call free(transactions);
 }
 
@@ -318,7 +330,7 @@ JNIEXPORT jstring JNICALL Java_com_breadwallet_wallet_BRWalletManager_getReceive
     if (!_wallet) return NULL;
 
     BRAddress receiveAddress = BRWalletReceiveAddress(_wallet);
-    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getReceiveAddress:%s",
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "receiveAddress: %s",
                         receiveAddress.s);
 
     return (*env)->NewStringUTF(env, receiveAddress.s);
@@ -644,7 +656,7 @@ Java_com_breadwallet_wallet_BRWalletManager_publishSerializedTransaction(JNIEnv 
 
     size_t seedSize = sizeof(key);
 
-    BRWalletSignTransaction(_wallet, tmpTx, key.u8, seedSize);
+    BRWalletSignTransaction(_wallet, tmpTx, 0, key.u8, seedSize);
     assert(BRTransactionIsSigned(tmpTx));
     if (!tmpTx) return JNI_FALSE;
     BRPeerManagerPublishTx(_peerManager, tmpTx, NULL, callback);
@@ -765,7 +777,7 @@ JNIEXPORT jobject JNICALL Java_com_breadwallet_wallet_BRWalletManager_getPrivKey
 
     jclass importPrivKeyClass = (*env)->FindClass(env,
                                                   "com/breadwallet/presenter/entities/ImportPrivKeyEntity");
-    BRAddress address = BRWalletChangeAddress(_wallet);
+    BRAddress address = BRWalletReceiveAddress(_wallet);
     uint8_t script[BRAddressScriptPubKey(NULL, 0, address.s)];
     size_t scriptLen = BRAddressScriptPubKey(script, sizeof(script), address.s);
 
@@ -805,7 +817,7 @@ Java_com_breadwallet_wallet_BRWalletManager_confirmKeySweep(JNIEnv *env, jobject
     BRKey key;
 
     BRKeySetPrivKey(&key, rawString);
-    BRTransactionSign(tmpTx, &key, 1);
+    BRTransactionSign(tmpTx, 0, &key, 1);
     if (!tmpTx || !BRTransactionIsSigned(tmpTx)) return JNI_FALSE;
 
     uint8_t buf[BRTransactionSerialize(tmpTx, NULL, 0)];
@@ -889,4 +901,80 @@ JNIEXPORT jboolean JNICALL Java_com_breadwallet_wallet_BRWalletManager_isTestNet
     return BITCOIN_TESTNET ? JNI_TRUE : JNI_FALSE;
 }
 
+// returns an unsigned transaction that sweeps all wallet UTXOs as of block height 478559 to addr
+// transaction must be signed using a forkId of 0x40
+static BRTransaction *
+BRWalletBCashSweepTx(BRWallet *wallet, BRMasterPubKey mpk, const char *addr, uint64_t feePerKb) {
+    size_t txCount = BRWalletTransactions(wallet, NULL, 0) -
+                     BRWalletTxUnconfirmedBefore(wallet, NULL, 0, BCASH_FORKHEIGHT);
+    BRTransaction *transactions[txCount], *tx;
+    BRWallet *w;
 
+    txCount = BRWalletTransactions(wallet, transactions, txCount);
+    w = BRWalletNew(transactions, txCount, mpk);
+    BRWalletSetFeePerKb(w, feePerKb);
+    tx = BRWalletCreateTransaction(w, BRWalletMaxOutputAmount(w), addr);
+    BRWalletFree(w);
+    return tx;
+}
+
+JNIEXPORT jlong JNICALL Java_com_breadwallet_wallet_BRWalletManager_getBCashBalance(
+        JNIEnv *env,
+        jobject thiz,
+        jbyteArray bytePubKey) {
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getSeedFromPhrase");
+
+    jbyte *pubKeyBytes = (*env)->GetByteArrayElements(env, bytePubKey, 0);
+    BRMasterPubKey pubKey = *(BRMasterPubKey *) pubKeyBytes;
+
+    size_t txCount = BRWalletTransactions(_wallet, NULL, 0) -
+                     BRWalletTxUnconfirmedBefore(_wallet, NULL, 0, BCASH_FORKHEIGHT);
+    BRTransaction *transactions[txCount];
+    BRWallet *w;
+
+    txCount = BRWalletTransactions(_wallet, transactions, txCount);
+    w = BRWalletNew(transactions, txCount, pubKey);
+    jlong balance = (jlong) BRWalletBalance(w);
+    BRWalletFree(w);
+//
+    return balance;
+}
+
+//creates and signs a bcash tx, returns the serialized tx
+JNIEXPORT jbyteArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_sweepBCash(JNIEnv *env,
+                                                                               jobject thiz,
+                                                                               jbyteArray bytePubKey,
+                                                                               jstring address, jbyteArray phrase) {
+    __android_log_print(ANDROID_LOG_DEBUG, "Message from C: ", "getSeedFromPhrase");
+
+    if(!_wallet) return NULL;
+
+    jbyte *pubKeyBytes = (*env)->GetByteArrayElements(env, bytePubKey, 0);
+    BRMasterPubKey pubKey = *(BRMasterPubKey *) pubKeyBytes;
+    const char *rawAddress = (*env)->GetStringUTFChars(env, address, NULL);
+    jbyte *bytePhrase = (*env)->GetByteArrayElements(env, phrase, 0);
+
+    UInt512 key = UINT512_ZERO;
+    char *charPhrase = (char *) bytePhrase;
+    BRBIP39DeriveKey(key.u8, charPhrase, NULL);
+
+    size_t seedSize = sizeof(key);
+
+    BRTransaction *tx = BRWalletBCashSweepTx(_wallet, pubKey, rawAddress, MIN_FEE_PER_KB);
+
+    BRWalletSignTransaction(_wallet, tx, 0x40, key.u8, seedSize);
+    assert(BRTransactionIsSigned(tx));
+    if (!tx) return NULL;
+
+    size_t len = BRTransactionSerialize(tx, NULL, 0);
+    uint8_t *buf = malloc(len);
+
+    len = BRTransactionSerialize(tx, buf, len);
+
+    jbyteArray result = (*env)->NewByteArray(env, (jsize) len);
+
+    (*env)->SetByteArrayRegion(env, result, 0, (jsize) len, (jbyte *) buf);
+    free(buf);
+    return result;
+
+}

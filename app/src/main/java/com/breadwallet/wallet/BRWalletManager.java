@@ -63,9 +63,11 @@ import com.google.zxing.common.BitMatrix;
 
 //import junit.framework.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -180,6 +182,8 @@ public class BRWalletManager {
      * true if keystore is available and we know that no wallet exists on it
      */
     public boolean noWallet(Activity ctx) {
+        if (ctx == null) throw new NullPointerException("noWallet ctx is null");
+        if (isKeyStoreCorrupt(ctx)) return true;
         byte[] pubkey = KeyStoreManager.getMasterPublicKey(ctx);
 
         if (pubkey == null || pubkey.length == 0) {
@@ -194,6 +198,33 @@ public class BRWalletManager {
                 return false;
             }
 
+        }
+        return false;
+    }
+
+    private boolean isKeyStoreCorrupt(Activity ctx) {
+        try {
+            String address = SharedPreferencesManager.getReceiveAddress(ctx);
+            if (Utils.isNullOrEmpty(address)) {
+                Log.e(TAG, "isKeyStoreCorrupt: address corrupted:");
+                return true;
+            }
+            List<String> aliases = new ArrayList<>();
+            aliases.add(KeyStoreManager.PHRASE_ALIAS);
+            aliases.add(KeyStoreManager.PUB_KEY_ALIAS);
+            aliases.add(KeyStoreManager.CANARY_ALIAS);
+            for (String alias : aliases) {
+                KeyStoreManager.AliasObject obj = KeyStoreManager.aliasObjectMap.get(alias);
+                boolean fileExists = new File(KeyStoreManager.getEncryptedDataFilePath(obj.datafileName, ctx)).exists();
+                boolean ivExists = new File(KeyStoreManager.getEncryptedDataFilePath(obj.ivFileName, ctx)).exists();
+                if (!fileExists || !ivExists) {
+                    Log.e(TAG, "isKeyStoreCorrupt: KS corrupt for: " + alias + ", fileExists: " + fileExists + ", ivExists: " + ivExists);
+                    return true;
+                }
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "isKeyStoreCorrupt: KS corrupt with exception: " + ex.getMessage());
+            return true;
         }
         return false;
     }
@@ -1205,5 +1236,9 @@ public class BRWalletManager {
     public static native byte[] getSeedFromPhrase(byte[] phrase);
 
     public static native boolean isTestNet();
+
+    public static native byte[] sweepBCash(byte[] pubKey, String address, byte[] phrase);
+
+    public static native long getBCashBalance(byte[] pubKey);
 
 }

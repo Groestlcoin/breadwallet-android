@@ -10,8 +10,8 @@ model {
             applicationId = 'hashengineering.groestlcoin.groestlwallet'
             minSdkVersion.apiLevel = 23
             targetSdkVersion.apiLevel = 25
-            versionCode = 830
-            versionName = "83"
+            versionCode = 870
+            versionName = "87"
         }
 
         ndk {
@@ -77,7 +77,7 @@ model {
                     }
                 }
                 ndk {
-                    //CFlags.addAll(['-DBITCOIN_TESTNET=1'])
+//                    CFlags.addAll(['-DBITCOIN_TESTNET=1'])
                     minifyEnabled = false
                     debuggable = true
                 }
