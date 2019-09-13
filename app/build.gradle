@@ -10,7 +10,7 @@ model {
             applicationId = 'hashengineering.groestlcoin.groestlwallet'
             minSdkVersion.apiLevel = 23
             targetSdkVersion.apiLevel = 25
-            versionCode = 890
+            versionCode = 891
             versionName = "89"
         }
 
