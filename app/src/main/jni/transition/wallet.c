@@ -656,7 +656,7 @@ Java_com_breadwallet_wallet_BRWalletManager_publishSerializedTransaction(JNIEnv 
 
     size_t seedSize = sizeof(key);
 
-    BRWalletSignTransaction(_wallet, tmpTx, 0, key.u8, seedSize);
+    BRWalletSignTransaction(_wallet, tmpTx, key.u8, seedSize);
     assert(BRTransactionIsSigned(tmpTx));
     if (!tmpTx) return JNI_FALSE;
     BRPeerManagerPublishTx(_peerManager, tmpTx, NULL, callback);
@@ -817,7 +817,7 @@ Java_com_breadwallet_wallet_BRWalletManager_confirmKeySweep(JNIEnv *env, jobject
     BRKey key;
 
     BRKeySetPrivKey(&key, rawString);
-    BRTransactionSign(tmpTx, 0, &key, 1);
+    BRTransactionSign(tmpTx,  &key, 1);
     if (!tmpTx || !BRTransactionIsSigned(tmpTx)) return JNI_FALSE;
 
     uint8_t buf[BRTransactionSerialize(tmpTx, NULL, 0)];
@@ -962,7 +962,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_breadwallet_wallet_BRWalletManager_sweepBC
 
     BRTransaction *tx = BRWalletBCashSweepTx(_wallet, pubKey, rawAddress, MIN_FEE_PER_KB);
 
-    BRWalletSignTransaction(_wallet, tx, 0x40, key.u8, seedSize);
+    BRWalletSignTransaction(_wallet, tx, key.u8, seedSize);
     assert(BRTransactionIsSigned(tx));
     if (!tx) return NULL;
 
