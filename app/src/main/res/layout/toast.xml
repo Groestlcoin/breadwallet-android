@@ -3,14 +3,15 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:background="@drawable/toast_layout_orange"
+    android:background="@drawable/toast_layout_black"
     android:filterTouchesWhenObscured="true"
     android:orientation="horizontal"
     android:padding="8dp"
     android:showDividers="middle">
 
-    <TextView
+    <com.breadwallet.legacy.presenter.customviews.BaseTextView
         android:id="@+id/toast_text"
+        android:textSize="@dimen/sub_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:filterTouchesWhenObscured="true"

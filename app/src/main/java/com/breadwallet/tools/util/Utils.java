@@ -1,36 +1,42 @@
 package com.breadwallet.tools.util;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Typeface;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.Settings;
+import androidx.core.app.ActivityCompat;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.breadwallet.R;
-import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.tools.manager.BRSharedPrefs;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import static android.content.Context.FINGERPRINT_SERVICE;
+
 
 /**
  * BreadWallet
@@ -52,7 +58,6 @@ import java.util.Locale;
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
@@ -60,25 +65,15 @@ import java.util.Locale;
 public class Utils {
     public static final String TAG = Utils.class.getName();
 
-    public static void overrideFonts(TextView... v) {
-        if (v == null) return;
-        Typeface FONT_REGULAR = Typeface.create("sans-serif-light", Typeface.NORMAL);
-        for (TextView view : v) {
-            try {
-                if (view != null) {
-                    view.setTypeface(FONT_REGULAR);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    private static final String NUMBER_PATTERN = "-?\\d+(\\.\\d+)?";
 
-    }
-
-    public static boolean isUsingCustomInputMethod(Activity context) {
+    public static boolean isUsingCustomInputMethod(Context context) {
         if (context == null) return false;
         InputMethodManager imm = (InputMethodManager) context.getSystemService(
                 Context.INPUT_METHOD_SERVICE);
+        if (imm == null) {
+            return false;
+        }
         List<InputMethodInfo> mInputMethodProperties = imm.getEnabledInputMethodList();
         final int N = mInputMethodProperties.size();
         for (int i = 0; i < N; i++) {
@@ -86,8 +81,7 @@ public class Utils {
             if (imi.getId().equals(
                     Settings.Secure.getString(context.getContentResolver(),
                             Settings.Secure.DEFAULT_INPUT_METHOD))) {
-                if ((imi.getServiceInfo().applicationInfo.flags &
-                        ApplicationInfo.FLAG_SYSTEM) == 0) {
+                if ((imi.getServiceInfo().applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
                     return true;
                 }
             }
@@ -96,11 +90,11 @@ public class Utils {
     }
 
     @SuppressWarnings("deprecation")
-    public static void printPhoneSpecs() {
+    public static void printPhoneSpecs(Context context) {
         String specsTag = "PHONE SPECS";
         Log.e(specsTag, "");
         Log.e(specsTag, "***************************PHONE SPECS***************************");
-        Log.e(specsTag, "* screen X: " + MainActivity.screenParametersPoint.x + " , screen Y: " + MainActivity.screenParametersPoint.y);
+        Log.e(specsTag, "* screen X: " + BRSharedPrefs.getScreenWidth() + " , screen Y: " + BRSharedPrefs.getScreenHeight());
         Log.e(specsTag, "* Build.CPU_ABI: " + Build.CPU_ABI);
         Runtime rt = Runtime.getRuntime();
         long maxMemory = rt.maxMemory();
@@ -109,18 +103,8 @@ public class Utils {
         Log.e(specsTag, "");
     }
 
-    public static boolean isEmulatorOrDebug(Activity app) {
-        String fing = Build.FINGERPRINT;
-        boolean isEmulator = false;
-        if (fing != null) {
-            isEmulator = fing.contains("vbox") || fing.contains("generic");
-        }
-        return isEmulator || (0 != (app.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
-    }
+    public static String getFormattedDateFromLong(Context app, long time) {
 
-    public static String getFormattedDateFromLong(long time) {
-
-        MainActivity app = MainActivity.app;
         SimpleDateFormat formatter = new SimpleDateFormat("M/d@ha", Locale.getDefault());
         boolean is24HoursFormat = false;
         if (app != null) {
@@ -136,8 +120,23 @@ public class Utils {
         return result;
     }
 
+    public static String formatTimeStamp(long time, String pattern) {
+//        SimpleDateFormat formatter = new SimpleDateFormat(pattern, Locale.getDefault());
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeInMillis(time);
+        return android.text.format.DateFormat.format(pattern, time).toString();
+    }
+
     public static boolean isNullOrEmpty(String str) {
         return str == null || str.isEmpty();
+    }
+
+    public static boolean isNumber(String str) {
+        return !Utils.isNullOrEmpty(str) && str.matches(NUMBER_PATTERN);
+    }
+
+    public static boolean isNullOrZero(BigDecimal amount) {
+        return amount == null || amount.compareTo(BigDecimal.ZERO) == 0;
     }
 
     public static boolean isNullOrEmpty(byte[] arr) {
@@ -151,10 +150,6 @@ public class Utils {
     public static int getPixelsFromDps(Context context, int dps) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dps * scale + 0.5f);
-    }
-
-    public static int getPixelsFromSps(Context context, float sp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
     }
 
     public static String bytesToHex(byte[] in) {
@@ -175,23 +170,130 @@ public class Utils {
         return data;
     }
 
-    public static String getLogs(Activity app) {
-        StringBuilder log = new StringBuilder();
-        try {
-            Process process = Runtime.getRuntime().exec("logcat -d");
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-
-
-            String line = "";
-            while ((line = bufferedReader.readLine()) != null) {
-                log.append(line);
-                log.append("\n");
-            }
-        } catch (IOException ignored) {
-            Toast.makeText(app.getApplicationContext(), ignored.toString(), Toast.LENGTH_SHORT).show();
-        }
-        return log.toString();
+    public static boolean isFingerprintEnrolled(Context app) {
+        FingerprintManager fingerprintManager = (FingerprintManager) app.getSystemService(FINGERPRINT_SERVICE);
+        // Device doesn't support fingerprint authentication
+        return ActivityCompat.checkSelfPermission(app, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED
+                && fingerprintManager != null
+                && fingerprintManager.isHardwareDetected()
+                && fingerprintManager.hasEnrolledFingerprints();
     }
 
+    public static boolean isFingerprintAvailable(Context app) {
+        FingerprintManager fingerprintManager = (FingerprintManager) app.getSystemService(FINGERPRINT_SERVICE);
+        if (fingerprintManager == null) return false;
+        // Device doesn't support fingerprint authentication
+        if (ActivityCompat.checkSelfPermission(app, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(app, "Fingerprint authentication permission not enabled", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return fingerprintManager.isHardwareDetected();
+    }
+
+    public static void hideKeyboard(Context app) {
+        if (app != null) {
+            Activity activity = (Activity) app;
+            View view = activity.getCurrentFocus() != null ?
+                    activity.getCurrentFocus() : activity.findViewById(android.R.id.content);
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) app.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+            }
+        }
+    }
+
+    // This method checks if a screen altering app(such as Twightlight) is currently running
+    // If it is, notify the user that the BRD app will not function properly and they should
+    // disable it
+    public static boolean checkIfScreenAlteringAppIsRunning(Context app, String packageName) {
+
+
+        // Use the ActivityManager API if sdk version is less than 21
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            // Get the Activity Manager
+            ActivityManager manager = (ActivityManager) app.getSystemService(Activity.ACTIVITY_SERVICE);
+
+            // Get a list of running tasks, we are only interested in the last one,
+            // the top most so we give a 1 as parameter so we only get the topmost.
+            List<ActivityManager.RunningAppProcessInfo> processes = manager.getRunningAppProcesses();
+            Log.d(TAG, "Process list count -> " + processes.size());
+
+
+            String processName = "";
+            for (ActivityManager.RunningAppProcessInfo processInfo : processes) {
+
+                // Get the info we need for comparison.
+                processName = processInfo.processName;
+                Log.d(TAG, "Process package name -> " + processName);
+
+                // Check if it matches our package name
+                if (processName.equals(packageName)) return true;
+
+
+            }
+
+        }
+
+        // Use the UsageStats API for sdk versions greater than Lollipop
+        else {
+            UsageStatsManager usm = (UsageStatsManager) app.getSystemService(Activity.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+                String currentPackageName = "";
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                    currentPackageName = usageStats.getPackageName();
+
+
+                    if (currentPackageName.equals(packageName)) {
+                        return true;
+                    }
+
+                }
+
+            }
+
+        }
+
+        return false;
+    }
+
+    public static void correctTextSizeIfNeeded(TextView v) {
+        int limit = 100;
+        int lines = v.getLineCount();
+        float px = v.getTextSize();
+        while (lines > 1 && !v.getText().toString().contains("\n")) {
+            limit--;
+            px -= 1;
+            v.setTextSize(TypedValue.COMPLEX_UNIT_PX, px);
+            lines = v.getLineCount();
+            if (limit <= 0) {
+                Log.e(TAG, "correctTextSizeIfNeeded: Failed to rescale, limit reached, final: " + px);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Helper function to validate if a string is in JSON format. Supports either JSONObject or JSONArray.
+     *
+     * @param jsonString The string to be validated.
+     * @return True if valid JSON, false if not.
+     */
+    public static boolean isValidJSON(String jsonString) {
+        try {
+            new JSONObject(jsonString);
+        } catch (JSONException e1) {
+            try {
+                new JSONArray(jsonString);
+            } catch (JSONException e2) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

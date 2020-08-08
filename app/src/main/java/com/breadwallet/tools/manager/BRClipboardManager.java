@@ -35,7 +35,7 @@ import android.net.Uri;
 public class BRClipboardManager {
 
     @SuppressLint("NewApi")
-    public static void copyToClipboard(Context context, String text) {
+    public static void putClipboard(Context context, String text) {
         try {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context
                     .getSystemService(Context.CLIPBOARD_SERVICE);
@@ -48,7 +48,7 @@ public class BRClipboardManager {
     }
 
     @SuppressLint("NewApi")
-    public static String readFromClipboard(Context context) {
+    public static String getClipboard(Context context) {
         ClipboardManager clipboard = (ClipboardManager) context
                 .getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -59,21 +59,10 @@ public class BRClipboardManager {
         ClipData clip = clipboard.getPrimaryClip();
         if (clip != null) {
 
-            String text = null;
-            String title = null;
-
             // Gets the first item from the clipboard data
             ClipData.Item item = clip.getItemAt(0);
 
-            // Tries to get the item's contents as a URI pointing to a note
-            Uri uri = item.getUri();
-
-            // If the contents of the clipboard wasn't a reference to a
-            // note, then
-            // this converts whatever it is to text.
-            text = coerceToText(item).toString();
-
-            return text;
+            return coerceToText(item).toString();
         }
         return "";
     }

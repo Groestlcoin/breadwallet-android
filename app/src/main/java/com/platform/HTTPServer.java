@@ -1,54 +1,43 @@
 package com.platform;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
-import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.app.BreadApp;
+import com.breadwallet.tools.manager.BRReportsManager;
+import com.breadwallet.tools.manager.BRSharedPrefs;
+import com.breadwallet.tools.threads.executor.BRExecutor;
+import com.breadwallet.tools.util.BRConstants;
+import com.breadwallet.tools.util.Utils;
 import com.platform.interfaces.Middleware;
 import com.platform.interfaces.Plugin;
 import com.platform.middlewares.APIProxy;
 import com.platform.middlewares.HTTPFileMiddleware;
 import com.platform.middlewares.HTTPIndexMiddleware;
 import com.platform.middlewares.HTTPRouter;
-import com.platform.middlewares.plugins.CameraPlugin;
-import com.platform.middlewares.plugins.GeoLocationPlugin;
 import com.platform.middlewares.plugins.KVStorePlugin;
 import com.platform.middlewares.plugins.LinkPlugin;
-import com.platform.middlewares.plugins.WalletPlugin;
+import com.platform.util.CachedInputHttpServletRequest;
 
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.server.WebSocketHandler;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Random;
 import java.util.Set;
-import java.util.Stack;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.breadwallet.R.string.request;
-import static com.platform.APIClient.server;
+import static org.kodein.di.TypesKt.TT;
+
 
 /**
  * BreadWallet
@@ -74,120 +63,112 @@ import static com.platform.APIClient.server;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class HTTPServer {
-    public static final String TAG = HTTPServer.class.getName();
+public class HTTPServer extends AbstractLifeCycle {
+    public static final String TAG = HTTPServer.class.getSimpleName();
+    public static final String URL_BUY = "/buy";
+    public static final String URL_TRADE = "/trade";
+    public static final String URL_SELL = "/sell";
+    public static final String URL_SUPPORT = "/support";
+    public static final String URL_REWARDS = "/rewards";
+    public static final String URL_MAP = "/map";
+    private static final String PLATFORM_BASE_URL = "http://127.0.0.1:";
+    private static final int MIN_PORT = 8000;
+    private static final int MAX_PORT = 49152;
+    private static final int MAX_RETRIES = 10;
 
+    private static HTTPServer mInstance;
     private static Set<Middleware> middlewares;
-    private static Server server;
-    public static final int PORT = 31120;
-    public static final String URL_EA = "http://localhost:" + PORT + "/ea";
-    public static final String URL_BUY_BITCOIN = "http://localhost:" + PORT + "/buy";
+    private static OnCloseListener mOnCloseListener;
+    private int mPort;
+    private Server mServer;
+    private Context mContext; // TODO Inject when implementing dependency injection.
 
-    public HTTPServer() {
-        init();
+    private HTTPServer() {
+        mContext = BreadApp.getKodeinInstance().Instance(TT(Application.class), null);
     }
 
-    private static void init() {
-        middlewares = new LinkedHashSet<>();
-        server = new Server(PORT);
-        try {
-            server.dump(System.err);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static synchronized HTTPServer getInstance() {
+        if (mInstance == null) {
+            mInstance = new HTTPServer();
         }
 
-        HandlerCollection handlerCollection = new HandlerCollection();
-
-        WebSocketHandler wsHandler = new WebSocketHandler() {
-            @Override
-            public void configure(WebSocketServletFactory factory) {
-                factory.register(BRGeoWebSocketHandler.class);
-            }
-        };
-
-        ServerHandler serverHandler = new ServerHandler();
-        handlerCollection.addHandler(serverHandler);
-        handlerCollection.addHandler(wsHandler);
-
-        server.setHandler(handlerCollection);
-
-        setupIntegrations();
-
+        return mInstance;
     }
 
-    public static void startServer() {
-        Log.d(TAG, "startServer");
-        try {
-            if (server != null && server.isStarted()) {
-                return;
-            }
-            if (server == null) init();
-            server.start();
-            server.join();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    /**
+     * Get base url where the platform is hosted.
+     *
+     * @return Platform's base url.
+     */
+    public static String getPlatformBaseUrl() {
+        return PLATFORM_BASE_URL + mInstance.mPort;
     }
 
-    public static void stopServer() {
-        Log.d(TAG, "stopServer");
-        try {
-            if (server != null)
-                server.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        server = null;
-    }
-
-    public boolean isStarted() {
-        return server != null && server.isStarted();
-    }
-
-    private static class ServerHandler extends AbstractHandler {
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-                throws IOException, ServletException {
-            boolean success;
-            success = dispatch(target, baseRequest, request, response);
-            if (!success) {
-                Log.e(TAG, "handle: NO MIDDLEWARE HANDLED THE REQUEST: " + target);
-            }
-        }
+    /**
+     * Get the platform's url for a given endpoint.
+     *
+     * @param endpoint The platform's endpoint.
+     * @return The url where the endpoint is hosted.
+     */
+    public static String getPlatformUrl(String endpoint) {
+        return getPlatformBaseUrl() + endpoint;
     }
 
     private static boolean dispatch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         Log.d(TAG, "TRYING TO HANDLE: " + target + " (" + request.getMethod() + ")");
+        final Context context = BreadApp.getBreadContext();
         boolean result = false;
-        if (target.equalsIgnoreCase("/_close")) {
-            final MainActivity app = MainActivity.app;
-            if (app != null) {
-                app.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        app.onBackPressed();
+        if (target.equalsIgnoreCase(BRConstants.CLOSE)) {
+            if (context != null) {
+                BRExecutor.getInstance().forMainThreadTasks().execute(() -> {
+                    if (mOnCloseListener != null) {
+                        mOnCloseListener.onClose();
                     }
                 });
-                response.setStatus(200);
-                baseRequest.setHandled(true);
-                return true;
+                APIClient.BRResponse resp = new APIClient.BRResponse(null, 200);
+                return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
+            }
+            return true;
+        } else if (target.toLowerCase().startsWith("/_email")) {
+            Log.e(TAG, "dispatch: uri: " + baseRequest.getUri().toString());
+            String address = Uri.parse(baseRequest.getUri().toString()).getQueryParameter("address");
+            Log.e(TAG, "dispatch: address: " + address);
+            if (Utils.isNullOrEmpty(address)) {
+                return BRHTTPHelper.handleError(400, "no address", baseRequest, response);
             }
 
-            return false;
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{address});
+
+            //need this to prompts email client only
+            email.setType("message/rfc822");
+
+            context.startActivity(Intent.createChooser(email, "Choose an Email client :"));
+            APIClient.BRResponse resp = new APIClient.BRResponse(null, 200);
+            return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
+        } else if (target.toLowerCase().startsWith("/_didload")) {
+            APIClient.BRResponse resp = new APIClient.BRResponse(null, 200);
+            return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
         }
 
         for (Middleware m : middlewares) {
             result = m.handle(target, baseRequest, request, response);
             if (result) {
                 String className = m.getClass().getName().substring(m.getClass().getName().lastIndexOf(".") + 1);
-                if (!className.contains("HTTPRouter"))
+                if (!className.contains("HTTPRouter")) {
                     Log.d(TAG, "dispatch: " + className + " succeeded:" + request.getRequestURL());
+                }
                 break;
             }
         }
         return result;
     }
 
-    private static void setupIntegrations() {
+    public static void setOnCloseListener(OnCloseListener listener) {
+        mOnCloseListener = listener;
+    }
+
+    private void setupIntegrations() {
         // proxy api for signing and verification
         APIProxy apiProxy = new APIProxy();
         middlewares.add(apiProxy);
@@ -204,18 +185,6 @@ public class HTTPServer {
         HTTPIndexMiddleware httpIndexMiddleware = new HTTPIndexMiddleware();
         middlewares.add(httpIndexMiddleware);
 
-        // geo plugin provides access to onboard geo location functionality
-        Plugin geoLocationPlugin = new GeoLocationPlugin();
-        httpRouter.appendPlugin(geoLocationPlugin);
-
-        // camera plugin
-        Plugin cameraPlugin = new CameraPlugin();
-        httpRouter.appendPlugin(cameraPlugin);
-
-        // wallet plugin provides access to the wallet
-        Plugin walletPlugin = new WalletPlugin();
-        httpRouter.appendPlugin(walletPlugin);
-
         // link plugin which allows opening links to other apps
         Plugin linkPlugin = new LinkPlugin();
         httpRouter.appendPlugin(linkPlugin);
@@ -223,6 +192,133 @@ public class HTTPServer {
         // kvstore plugin provides access to the shared replicated kv store
         Plugin kvStorePlugin = new KVStorePlugin();
         httpRouter.appendPlugin(kvStorePlugin);
+    }
+
+    private void init(int port) {
+        middlewares = new LinkedHashSet<>();
+        mServer = new Server(port);
+        try {
+            mServer.dump(System.err);
+        } catch (IOException e) {
+            Log.e(TAG, "Server dump failed", e);
+            BRReportsManager.reportBug(e);
+        }
+
+        HandlerCollection handlerCollection = new HandlerCollection();
+
+        ServerHandler serverHandler = new ServerHandler();
+        handlerCollection.addHandler(serverHandler);
+
+        mServer.setHandler(handlerCollection);
+
+        setupIntegrations();
+    }
+
+    /**
+     * Start the server.
+     *
+     * @param context Application context.
+     */
+    public void startServer(Context context) {
+        try {
+            mInstance.start();
+        } catch (Exception e) {
+            Log.e(TAG, "startServer: Error starting the local server.", e);
+            BRReportsManager.reportBug(e);
+        }
+    }
+
+    public void stopServer() {
+        try {
+            mInstance.stop();
+        } catch (Exception e) {
+            Log.e(TAG, "stopServer: Error stopping the local server.", e);
+            BRReportsManager.reportBug(e);
+        }
+    }
+
+    @Override
+    protected void doStart() {
+        Log.d(TAG, "doStart");
+        BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+            int retries = 0;
+            while (!doStartServer() && retries < MAX_RETRIES) { // if failed to start the server retry with new port
+                retries++;
+            }
+            if (retries == MAX_RETRIES) {
+                Log.e(TAG, "doStart: Failed to start local server, MAX_RETRIES reached.");
+            }
+        });
+    }
+
+    @Override
+    protected void doStop() {
+        Log.d(TAG, "doStop");
+        if (mServer != null && !mServer.isStopped()) {
+            BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (mServer != null) {
+                            mServer.stop();
+                            mServer = null;
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "doStop: Error stopping the local server.", e);
+                        BRReportsManager.reportBug(e);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Attempt to start the server on the current port, returns true if a retry is required.
+     *
+     * @return True if server was started; false, otherwise.
+     */
+    private boolean doStartServer() {
+        // Get the last port used in case we are restarting the server.
+        int port = BRSharedPrefs.getHttpServerPort();
+        if (port < MIN_PORT || port > MAX_PORT) {
+            Random rand = new Random();
+            port = rand.nextInt((MAX_PORT - MIN_PORT)) + MIN_PORT;
+        }
+        Log.d(TAG, "doStartServer: Starting the server in port: " + port);
+        try {
+            init(port);
+            mServer.start();
+
+            // Save the port for future restarts.
+            mPort = port;
+            BRSharedPrefs.putHttpServerPort(port);
+
+            Log.d(TAG, "doStartServer: Server started in port " + mPort);
+            mServer.join();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "doStart: Error starting the local server. Trying again on new port.", e);
+            BRReportsManager.reportBug(e);
+            BRSharedPrefs.putHttpServerPort(0);
+            return false;
+        }
+    }
+
+    public int getPort() {
+        return mPort;
+    }
+
+    public interface OnCloseListener {
+        void onClose();
+    }
+
+    private static class ServerHandler extends AbstractHandler {
+        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
+            if (!dispatch(target, baseRequest, new CachedInputHttpServletRequest(request), response)) {
+                Log.e(TAG, "handle: NO MIDDLEWARE HANDLED THE REQUEST, 404-ing: " + target);
+                BRHTTPHelper.handleError(404, "No middleware could handle the request.", baseRequest, response);
+            }
+        }
     }
 
 }

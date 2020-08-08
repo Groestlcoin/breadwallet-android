@@ -1,5 +1,5 @@
-app/Todos
-app/src/main/jni/transition/testingStuff.c
+*/google-services.json
+
 # Built application files
 *.apk
 *.ap_
@@ -18,6 +18,13 @@ gen/
 .gradle/
 build/
 */build/
+*.idea*
+
+# Include code styles
+!.idea/codeStyles/codestyleConfig.xml
+!.idea/codeStyles/Project.xml
+!.idea/inspectionProfiles/ktlint.xml
+!.idea/inspectionProfiles/profiles_settings.xml
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -34,7 +41,6 @@ proguard/
 # Android Studio
 *.iml
 *.keystore
-gradle.properties
 */local.properties
 */out
 */*/build
@@ -43,18 +49,6 @@ gradle.properties
 *.ipr
 *~
 *.swp
-.idea/.name
-.idea/workspace.xml
-.idea/libraries
-.idea/vcs.xml
-.idea/gradle.xml
-.idea/encodings.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/compiler.xml
-.idea/runConfigurations.xml
-.idea/copyright/profiles_settings.xml
-.navigation/
 
 # jniLibs files
 #NDK
@@ -62,8 +56,17 @@ obj/
 crash.txt
 projectFilesBackup/
 /captures/
-/projectFilesBackup/
+projectFilesBackup
 /publishTODO.txt
-.idea/copyright/
-/app/google-services.json
-/.idea/markdown-navigator/
+/.idea/
+fastlane/
+.env
+Release_checklist
+
+/app/.externalNativeBuild/
+
+# Fabric config
+/app/fabric.properties
+
+/app/src/main/res/font/*.otf
+/app/src/main/res/font/*.ttf

@@ -2,23 +2,21 @@ package com.platform.kvstore;
 
 import android.util.Log;
 
+import com.breadwallet.tools.util.Utils;
 import com.platform.APIClient;
 import com.platform.interfaces.KVStoreAdaptor;
-import com.platform.sqlite.KVEntity;
+import com.platform.sqlite.KVItem;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import static android.R.attr.key;
-import static com.platform.kvstore.CompletionObject.RemoteKVStoreError.notFound;
 import static com.platform.kvstore.CompletionObject.RemoteKVStoreError.unknown;
 
 /**
@@ -49,8 +47,16 @@ import static com.platform.kvstore.CompletionObject.RemoteKVStoreError.unknown;
 public class RemoteKVStore implements KVStoreAdaptor {
     public static final String TAG = RemoteKVStore.class.getName();
 
+    // Headers in response are back in lowercase.
+    private static final String HEADER_ETAG = "etag";
+    private static final String HEADER_LAST_MODIFIED = "last-modified";
+
     private static RemoteKVStore instance;
     private APIClient apiClient;
+
+    private RemoteKVStore(APIClient apiClient) {
+        this.apiClient = apiClient;
+    }
 
     public static RemoteKVStore getInstance(APIClient apiClient) {
         if (instance == null)
@@ -58,37 +64,31 @@ public class RemoteKVStore implements KVStoreAdaptor {
         return instance;
     }
 
-    private RemoteKVStore(APIClient apiClient) {
-        this.apiClient = apiClient;
-    }
-
     @Override
     public CompletionObject ver(String key) {
-        String url = String.format("%s/kv/1/%s", APIClient.BASE_URL, key);
-        okhttp3.Request request = new okhttp3.Request.Builder()
+        long v;
+        long t;
+        String url = String.format("%s/kv/1/%s", APIClient.getBaseURL(), key);
+        okhttp3.Request request;
+        request = new okhttp3.Request.Builder()
                 .url(url)
                 .head()
                 .build();
-        Response res = null;
-        res = apiClient.sendRequest(request, true, 0);
-        if (res == null) {
-            Log.d(TAG, "ver: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
-            return new CompletionObject(0, 0, unknown);
-        }
 
+        APIClient.BRResponse res = apiClient.sendRequest(request, true);
         if (!res.isSuccessful()) {
-            Log.e(TAG, "ver: [KV] PUT key=" + key + ", err=" + (res.code()));
-            return new CompletionObject(0, 0, unknown);
+            return new CompletionObject(0, 0, extractErr(res));
         }
-        long v = extractVersion(res);
-        long t = extractDate(res);
+        v = extractVersion(res);
+        t = extractDate(res);
         return new CompletionObject(v, t, extractErr(res));
     }
 
     @Override
     public CompletionObject put(String key, byte[] value, long version) {
-        String url = String.format("%s/kv/1/%s", APIClient.BASE_URL, key);
+        String url = String.format("%s/kv/1/%s", APIClient.getBaseURL(), key);
         RequestBody requestBody = RequestBody.create(null, value);
+
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .put(requestBody)
@@ -96,105 +96,102 @@ public class RemoteKVStore implements KVStoreAdaptor {
                 .addHeader("Content-Type", "application/octet-stream")
                 .addHeader("Content-Length", String.valueOf(value.length))
                 .build();
-        Response res = apiClient.sendRequest(request, true, 0);
-        if (res == null) {
-            Log.d(TAG, "ver: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
-            return new CompletionObject(0, 0, unknown);
-        }
+        long v;
+        long t;
+        APIClient.BRResponse res = apiClient.sendRequest(request, true);
 
         if (!res.isSuccessful()) {
-            Log.e(TAG, "ver: [KV] PUT key=" + key + ", err=" + (res.code()));
-            return new CompletionObject(0, 0, unknown);
+            Log.e(TAG, "put: [KV] PUT key=" + key + ", err=" + (res.getCode()));
+            return new CompletionObject(0, 0, extractErr(res));
         }
-        long v = extractVersion(res);
-        long t = extractDate(res);
+
+        v = extractVersion(res);
+        t = extractDate(res);
         return new CompletionObject(v, t, extractErr(res));
     }
 
     @Override
     public CompletionObject del(String key, long version) {
-        String url = String.format("%s/kv/1/%s", APIClient.BASE_URL, key);
+        String url = String.format("%s/kv/1/%s", APIClient.getBaseURL(), key);
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .delete()
                 .addHeader("If-None-Match", String.valueOf(version))
                 .build();
-        Response res = null;
-        res = apiClient.sendRequest(request, true, 0);
+        long v;
+        long t;
+        APIClient.BRResponse res = apiClient.sendRequest(request, true);
         if (res == null) {
-            Log.d(TAG, "ver: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
-            return new CompletionObject(0, 0, unknown);
+            Log.d(TAG, "del: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
+            return new CompletionObject(0, 0, extractErr(res));
         }
 
         if (!res.isSuccessful()) {
-            Log.e(TAG, "ver: [KV] PUT key=" + key + ", err=" + (res.code()));
-            return new CompletionObject(0, 0, unknown);
+            Log.e(TAG, "del: [KV] PUT key=" + key + ", err=" + (res.getCode()));
+            return new CompletionObject(0, 0, extractErr(res));
         }
-        long v = extractVersion(res);
-        long t = extractDate(res);
+
+        v = extractVersion(res);
+        t = extractDate(res);
         return new CompletionObject(v, t, extractErr(res));
     }
 
     @Override
     public CompletionObject get(String key, long version) {
-        String url = String.format("%s/kv/1/%s", APIClient.BASE_URL, key);
+        String url = String.format("%s/kv/1/%s", APIClient.getBaseURL(), key);
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .get()
                 .addHeader("If-None-Match", String.valueOf(version))
                 .build();
-        Response res = null;
-        res = apiClient.sendRequest(request, true, 0);
-        if (res == null) {
-            Log.d(TAG, "ver: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
-            return new CompletionObject(0, 0, unknown);
-        }
-
-        if (!res.isSuccessful()) {
-            Log.e(TAG, "ver: [KV] PUT key=" + key + ", err=" + (res.code()));
-            return new CompletionObject(0, 0, unknown);
-        }
-        long v = extractVersion(res);
-        long t = extractDate(res);
-        byte[] value = new byte[0];
+        long v;
+        long t;
+        byte[] value;
+        APIClient.BRResponse res;
         try {
-            value = res.body().bytes();
-        } catch (IOException e) {
+            res = apiClient.sendRequest(request, true);
+            if (res == null) {
+                Log.d(TAG, "get: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
+                return new CompletionObject(0, 0, unknown);
+            }
+
+            if (!res.isSuccessful()) {
+                return new CompletionObject(0, 0, extractErr(res));
+            }
+            v = extractVersion(res);
+            t = extractDate(res);
+            value = res.getBody();
+        } catch (Exception e) {
             e.printStackTrace();
+            return new CompletionObject(unknown);
         }
         return new CompletionObject(v, t, value, extractErr(res));
     }
 
     @Override
     public CompletionObject keys() {
-        String url = String.format("%s/kv/_all_keys", APIClient.BASE_URL);
+        String url = String.format("%s/kv/_all_keys", APIClient.getBaseURL());
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .get()
                 .build();
-        Response res = null;
-        res = apiClient.sendRequest(request, true, 0);
+        List<KVItem> keys = new ArrayList<>();
+        APIClient.BRResponse res = apiClient.sendRequest(request, true);
         if (res == null) {
-            Log.d(TAG, "ver: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
+            Log.d(TAG, "keys: [KV] PUT key=" + key + ", err= response is null (maybe auth challenge)");
             return new CompletionObject(0, 0, unknown);
         }
-
         if (!res.isSuccessful()) {
-            Log.e(TAG, "ver: [KV] PUT key=" + key + ", err=" + (res.code()));
-            return new CompletionObject(0, 0, unknown);
+            Log.e(TAG, "keys: [KV] PUT key=" + key + ", err=" + (res.getCode()));
+            return new CompletionObject(0, 0, extractErr(res));
         }
-        byte[] reqData = null;
-        try {
-            reqData = res.body().bytes();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Log.e(TAG, "kvs: reqData: " + Arrays.toString(reqData));
 
-        if (reqData == null) return new CompletionObject(0, 0, unknown);
+        byte[] reqData = res.getBody();
+
+        if (Utils.isNullOrEmpty(reqData)) return new CompletionObject(unknown);
+
         ByteBuffer buffer = ByteBuffer.wrap(reqData).order(java.nio.ByteOrder.LITTLE_ENDIAN);
 
-        List<KVEntity> keys = new ArrayList<>();
         try {
             int count = buffer.getInt();
 
@@ -208,32 +205,30 @@ public class RemoteKVStore implements KVStoreAdaptor {
 
                 byte[] keyBytes = new byte[keyLen];
                 buffer.get(keyBytes, 0, keyLen);
-                try {
-                    key = new String(keyBytes, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                key = new String(keyBytes, StandardCharsets.UTF_8);
 
                 version = buffer.getLong();
                 time = buffer.getLong();
                 deleted = buffer.get();
                 if (key == null || key.isEmpty()) return new CompletionObject(0, 0, unknown);
-                keys.add(new KVEntity(0, version, key, null, time, deleted));
+                keys.add(new KVItem(0, version, key, null, time, deleted));
 
             }
         } catch (Exception e) {
             e.printStackTrace();
             return new CompletionObject(0, 0, unknown);
         }
-        Log.e(TAG, "kvs: " + keys.size());
         return new CompletionObject(keys, null);
     }
 
-    private long extractVersion(Response res) {
+    private long extractVersion(APIClient.BRResponse res) {
         long remoteVersion = 0;
         try {
             if (res != null) {
-                remoteVersion = Long.valueOf(res.header("ETag"));
+                String eTag = res.getHeaders().get(HEADER_ETAG);
+                if (!Utils.isNullOrEmpty(eTag)) {
+                    remoteVersion = Long.valueOf(eTag);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -241,12 +236,13 @@ public class RemoteKVStore implements KVStoreAdaptor {
         return remoteVersion;
     }
 
-    private long extractDate(Response res) {
+    private long extractDate(APIClient.BRResponse res) {
         long remoteTime = 0;
         try {
             if (res != null) {
-                String lastModified = res.header("Last-Modified");
-                remoteTime = Date.parse(lastModified);
+                String lastModified = res.getHeaders().get(HEADER_LAST_MODIFIED);
+                if (!Utils.isNullOrEmpty(lastModified))
+                    remoteTime = Date.parse(lastModified);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -254,8 +250,9 @@ public class RemoteKVStore implements KVStoreAdaptor {
         return remoteTime;
     }
 
-    private CompletionObject.RemoteKVStoreError extractErr(Response res) {
-        int code = res.code();
+    private CompletionObject.RemoteKVStoreError extractErr(APIClient.BRResponse res) {
+        if (res == null) return CompletionObject.RemoteKVStoreError.unknown;
+        int code = res.getCode();
         if (code <= 399 && code >= 200) code = 999;
         switch (code) {
             case 404:

@@ -1,28 +1,46 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     repositories {
+        mavenCentral()
+        google()
         jcenter()
         maven {
-            url 'https://maven.google.com/'
-            name 'Google'
+            url 'https://dl.bintray.com/drewcarlson/redacted-plugin'
+            content {
+                includeGroup "io.sweers.redacted"
+            }
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle-experimental:0.9.3'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-        classpath 'com.google.gms:google-services:3.0.0'
+        classpath "io.sweers.redacted:redacted-compiler-gradle-plugin:$redacted_version"
+        classpath 'com.android.tools.build:gradle:4.0.0'
+        classpath 'com.google.gms:google-services:4.3.3' // google-services plugin
+        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.10"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.firebase:firebase-appdistribution-gradle:$firebase_distribution_version"
+        classpath "com.google.firebase:firebase-crashlytics-gradle:$firebase_crashlytics_gradle_version"
     }
 }
 
 allprojects {
     repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    url 'https://dl.bintray.com/brd/walletkit-java'
+                }
+            }
+            filter {
+                includeGroup "com.breadwallet.core"
+            }
+        }
+        mavenCentral()
+        google()
         jcenter()
         maven {
-            url 'https://maven.google.com/'
-            name 'Google'
+            url 'https://dl.bintray.com/drewcarlson/redacted-plugin'
+            content {
+                includeGroup "io.sweers.redacted"
+            }
         }
     }
 }

@@ -1,5 +1,3 @@
-package com.breadwallet.tools.sqlite;
-
 /**
  * BreadWallet
  * <p/>
@@ -24,89 +22,76 @@ package com.breadwallet.tools.sqlite;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package com.breadwallet.tools.sqlite;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.breadwallet.presenter.activities.MainActivity;
-import com.breadwallet.presenter.entities.BRMerkleBlockEntity;
-import com.breadwallet.presenter.entities.BlockEntity;
-import com.breadwallet.tools.manager.SharedPreferencesManager;
-import com.google.firebase.crash.FirebaseCrash;
+import com.breadwallet.legacy.presenter.entities.BRMerkleBlockEntity;
+import com.breadwallet.tools.util.BRConstants;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class MerkleBlockDataSource {
+public class MerkleBlockDataSource implements BRDataSourceInterface {
     private static final String TAG = MerkleBlockDataSource.class.getName();
-
-    // Database fields
-    private SQLiteDatabase database;
+    private static MerkleBlockDataSource instance;
     private final BRSQLiteHelper dbHelper;
     private final String[] allColumns = {
             BRSQLiteHelper.MB_COLUMN_ID,
             BRSQLiteHelper.MB_BUFF,
-            BRSQLiteHelper.MB_HEIGHT
+            BRSQLiteHelper.MB_HEIGHT,
+            BRSQLiteHelper.MB_ISO
     };
+    // Database fields
+    private SQLiteDatabase database;
 
-    public MerkleBlockDataSource(Context context) {
-        dbHelper = new BRSQLiteHelper(context);
+    private MerkleBlockDataSource(Context context) {
+        dbHelper = BRSQLiteHelper.getInstance(context);
     }
 
-    public void putMerkleBlocks(BlockEntity[] blockEntities) {
-        database = dbHelper.getWritableDatabase();
-        database.beginTransaction();
+    public static MerkleBlockDataSource getInstance(Context context) {
+        if (instance == null) {
+            instance = new MerkleBlockDataSource(context);
+        }
+        return instance;
+    }
+
+    public void deleteAllBlocks(Context app, String iso) {
         try {
-            for (BlockEntity b : blockEntities) {
-                ContentValues values = new ContentValues();
-                values.put(BRSQLiteHelper.MB_BUFF, b.getBlockBytes());
-                values.put(BRSQLiteHelper.MB_HEIGHT, b.getBlockHeight());
-                database.insert(BRSQLiteHelper.MB_TABLE_NAME, null, values);
-            }
-            database.setTransactionSuccessful();
-        } catch (Exception ex) {
-            FirebaseCrash.report(ex);
-            Log.e(TAG, "Error inserting into SQLite", ex);
-            //Error in between database transaction
+            database = openDatabase();
+            database.delete(BRSQLiteHelper.MB_TABLE_NAME, BRSQLiteHelper.MB_ISO + "=?", new String[]{iso.toUpperCase()});
         } finally {
-            database.endTransaction();
+            closeDatabase();
         }
     }
 
-    public void deleteAllBlocks() {
-        database = dbHelper.getWritableDatabase();
-        database.delete(BRSQLiteHelper.MB_TABLE_NAME, BRSQLiteHelper.MB_COLUMN_ID + " <> -1", null);
-    }
-
-    public void deleteMerkleBlock(BRMerkleBlockEntity merkleBlock) {
-        database = dbHelper.getWritableDatabase();
-        long id = merkleBlock.getId();
-        Log.e(TAG, "MerkleBlock deleted with id: " + id);
-        database.delete(BRSQLiteHelper.MB_TABLE_NAME, BRSQLiteHelper.MB_COLUMN_ID
-                + " = " + id, null);
-    }
-
-    public List<BRMerkleBlockEntity> getAllMerkleBlocks() {
-        database = dbHelper.getReadableDatabase();
+    public List<BRMerkleBlockEntity> getAllMerkleBlocks(Context app, String iso) {
         List<BRMerkleBlockEntity> merkleBlocks = new ArrayList<>();
+        Cursor cursor = null;
+        try {
+            database = openDatabase();
 
-        Cursor cursor = database.query(BRSQLiteHelper.MB_TABLE_NAME,
-                allColumns, null, null, null, null, null);
+            cursor = database.query(BRSQLiteHelper.MB_TABLE_NAME,
+                    allColumns, BRSQLiteHelper.MB_ISO + "=?", new String[]{iso.toUpperCase()},
+                    null, null, null);
 
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            BRMerkleBlockEntity merkleBlockEntity = cursorToMerkleBlock(cursor);
-            merkleBlocks.add(merkleBlockEntity);
-            cursor.moveToNext();
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                BRMerkleBlockEntity merkleBlockEntity = cursorToMerkleBlock(cursor);
+                merkleBlocks.add(merkleBlockEntity);
+                cursor.moveToNext();
+            }
+            Log.e(TAG, "merkleBlocks: " + merkleBlocks.size());
+            // make sure to close the cursor
+
+        } finally {
+            closeDatabase();
+            if (cursor != null) cursor.close();
+            return merkleBlocks;
         }
-        Log.e(TAG, "merkleBlocks: " + merkleBlocks.size());
-        // make sure to close the cursor
-        cursor.close();
-        return merkleBlocks;
     }
 
     private BRMerkleBlockEntity cursorToMerkleBlock(Cursor cursor) {
@@ -114,5 +99,27 @@ class MerkleBlockDataSource {
         merkleBlockEntity.setId(cursor.getInt(0));
 
         return merkleBlockEntity;
+    }
+
+    @Override
+    public SQLiteDatabase openDatabase() {
+//        if (mOpenCounter.incrementAndGet() == 1) {
+        // Opening new database
+        if (database == null || !database.isOpen())
+            database = dbHelper.getWritableDatabase();
+        dbHelper.setWriteAheadLoggingEnabled(BRConstants.WRITE_AHEAD_LOGGING);
+//        }
+//        Log.d("Database open counter: ",  String.valueOf(mOpenCounter.get()));
+        return database;
+    }
+
+    @Override
+    public void closeDatabase() {
+//        if (mOpenCounter.decrementAndGet() == 0) {
+//            // Closing database
+//            database.close();
+//
+//        }
+//        Log.d("Database open counter: " , String.valueOf(mOpenCounter.get()));
     }
 }

@@ -1,6 +1,7 @@
 package com.breadwallet.tools.animation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -12,7 +13,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
 import com.breadwallet.R;
-import com.breadwallet.presenter.fragments.FragmentSettingsAll;
 
 /**
  * BreadWallet
@@ -46,29 +46,36 @@ public class SpringAnimator {
         if (view != null) {
             view.setVisibility(View.GONE);
         }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ScaleAnimation trans = new ScaleAnimation(0.0f, 1f, 0.0f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-                trans.setDuration(800);
-                trans.setInterpolator(new DecelerateOvershootInterpolator(1.5f, 2.5f));
-                if (view != null) {
-                    view.setVisibility(View.VISIBLE);
-                    view.startAnimation(trans);
-                }
-            }
-        }, 200);
+        ScaleAnimation trans = new ScaleAnimation(0.0f, 1f, 0.0f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        trans.setDuration(800);
+        trans.setInterpolator(new DecelerateOvershootInterpolator(1.5f, 2.5f));
+        if (view != null) {
+            view.setVisibility(View.VISIBLE);
+            view.startAnimation(trans);
+        }
 
     }
 
     /**
      * Shows the springy animation on views
      */
-    public static void showAnimation(final View view) {
+    public static void springView(final View view) {
         if (view == null) return;
-        ScaleAnimation trans = new ScaleAnimation(0.6f, 1f, 0.6f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        trans.setDuration(500);
-        trans.setInterpolator(new DecelerateOvershootInterpolator(1.3f, 3f));
+        ScaleAnimation trans = new ScaleAnimation(0.8f, 1f, 0.8f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        trans.setDuration(1000);
+        trans.setInterpolator(new DecelerateOvershootInterpolator(0.5f, 1f));
+        view.setVisibility(View.VISIBLE);
+        view.startAnimation(trans);
+
+    }
+    /**
+     * Shows the springy animation on views
+     */
+    public static void shortSpringView(final View view) {
+        if (view == null) return;
+        ScaleAnimation trans = new ScaleAnimation(0.9f, 1f, 0.9f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        trans.setDuration(200);
+        trans.setInterpolator(new DecelerateOvershootInterpolator(1.3f, 1.4f));
         view.setVisibility(View.VISIBLE);
         view.startAnimation(trans);
 
@@ -86,7 +93,7 @@ public class SpringAnimator {
         view.startAnimation(trans);
     }
 
-    public static void failShakeAnimation(Activity context, View view) {
+    public static void failShakeAnimation(Context context, View view) {
         if (view == null) return;
         Animation shake = AnimationUtils.loadAnimation(context, R.anim.shake);
         view.setVisibility(View.VISIBLE);

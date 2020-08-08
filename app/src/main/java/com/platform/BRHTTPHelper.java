@@ -1,14 +1,15 @@
 package com.platform;
 
-import android.util.Log;
 
 import com.breadwallet.tools.util.Utils;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.util.StringUtil;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -38,9 +39,9 @@ import javax.servlet.http.HttpServletResponse;
 public class BRHTTPHelper {
     public static final String TAG = BRHTTPHelper.class.getName();
 
-    public static boolean handleError(int err, String errMess, Request req, HttpServletResponse resp) {
+    public static boolean handleError(int err, String errMess, Request baseRequest, HttpServletResponse resp) {
         try {
-            req.setHandled(true);
+            baseRequest.setHandled(true);
             if (Utils.isNullOrEmpty(errMess))
                 resp.sendError(err);
             else
@@ -50,20 +51,33 @@ public class BRHTTPHelper {
         }
         return true;
     }
-//    return BRHTTPHelper.handleError(500, "context is null", baseRequest, response);
-//    return BRHTTPHelper.handleSuccess(200, null, baseRequest, response, null);
 
-    public static boolean handleSuccess(int code, byte[] body, Request req, HttpServletResponse resp, String contentType) {
+    public static boolean handleSuccess(APIClient.BRResponse brResp, Request baseRequest, HttpServletResponse resp) {
         try {
-            resp.setStatus(code);
-            if(contentType != null && !contentType.isEmpty())
-                resp.setContentType(contentType);
-            if (body != null)
-                resp.getOutputStream().write(body);
-            req.setHandled(true);
+            if (brResp.getCode() == 0) throw new RuntimeException("http code can't be 0");
+            resp.setStatus(brResp.getCode());
+            resp.setContentType(brResp.getContentType());
+            if (!Utils.isNullOrEmpty(brResp.getBody()))
+                resp.getOutputStream().write(brResp.getBody());
+            for (String key : brResp.getHeaders().keySet()) {
+                resp.setHeader(key, brResp.getHeaders().get(key));
+            }
+            baseRequest.setHandled(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static byte[] getBody(HttpServletRequest request) {
+        if (request == null) return null;
+        byte[] rawData = null;
+        try {
+            InputStream body = request.getInputStream();
+            rawData = IOUtils.toByteArray(body);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rawData;
     }
 }

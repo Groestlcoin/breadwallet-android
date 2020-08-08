@@ -1,25 +1,24 @@
 package com.platform.middlewares;
 
+import android.content.Context;
 import android.util.Log;
 
-import com.breadwallet.presenter.activities.MainActivity;
+import com.breadwallet.app.BreadApp;
 import com.breadwallet.tools.crypto.CryptoHelper;
+import com.breadwallet.tools.manager.BRSharedPrefs;
+import com.breadwallet.tools.util.BRConstants;
+import com.breadwallet.tools.util.ServerBundlesHelper;
 import com.breadwallet.tools.util.TypesConverter;
 import com.breadwallet.tools.util.Utils;
+import com.platform.APIClient;
 import com.platform.BRHTTPHelper;
 import com.platform.interfaces.Middleware;
 
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.server.Response;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,10 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import okhttp3.Request;
 
-import static android.R.attr.baseline;
-import static android.R.attr.handle;
-import static com.platform.APIClient.BUNDLES;
-import static com.platform.APIClient.extractedFolder;
 
 /**
  * BreadWallet
@@ -58,53 +53,100 @@ import static com.platform.APIClient.extractedFolder;
  */
 public class HTTPFileMiddleware implements Middleware {
     public static final String TAG = HTTPFileMiddleware.class.getName();
-
+    private static String DEBUG_URL = null; //modify for testing, "http://bw-platform-tests.s3-website.us-east-2.amazonaws.com" - for tests
 
     @Override
     public boolean handle(String target, org.eclipse.jetty.server.Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         if (target.equals("/")) return false;
         if (target.equals("/favicon.ico")) {
-            return BRHTTPHelper.handleSuccess(200, null, baseRequest, response, null);
+            APIClient.BRResponse resp = new APIClient.BRResponse(null, 200, null);
+
+            return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
+        } else if (target.equals("/_didload")) {
+            APIClient.BRResponse resp = new APIClient.BRResponse(null, 200, null);
+
+            return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
         }
 
-        String requestedFile = MainActivity.app.getFilesDir() + "/" + BUNDLES + "/" + extractedFolder + target;
-        File temp = new File(requestedFile);
-        if (!temp.exists()) {
-            return false;
+        Context context = BreadApp.getBreadContext();
+        if (context == null) {
+            Log.e(TAG, "handle: app is null!");
+            return true;
         }
-        Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
-        boolean modified = true;
-        byte[] md5 = CryptoHelper.md5(TypesConverter.long2byteArray(temp.lastModified()));
-        String hexEtag = Utils.bytesToHex(md5);
-        response.setHeader("ETag", hexEtag);
+//        if (Utils.isEmulatorOrDebug(app))
+//            DEBUG_URL = "http://bw-platform-tests.s3-website.us-east-2.amazonaws.com";
 
-        // if the client sends an if-none-match header, determine if we have a newer version of the file
-        String etag = request.getHeader("if-none-match");
-        if (etag != null && etag.equalsIgnoreCase(hexEtag)) modified = false;
+        File temp = null;
+        APIClient.BRResponse brResp = new APIClient.BRResponse();
 
-        byte[] body = null;
-        if (modified) {
-            try {
-                body = FileUtils.readFileToByteArray(temp);
-            } catch (IOException e) {
-                e.printStackTrace();
+        // Platform Debug URL may be set above or via shared preferences
+        String webPlatformDebugURL = DEBUG_URL != null ? DEBUG_URL : BRSharedPrefs.getWebPlatformDebugURL();
+        if (Utils.isNullOrEmpty(webPlatformDebugURL)) {
+            // fetch the file locally
+            String requestedFile = ServerBundlesHelper.getExtractedPath(context, ServerBundlesHelper.getBundle(ServerBundlesHelper.Type.WEB), target);
+            Log.d(TAG, "Request local file -> " + requestedFile);
+            Log.d(TAG, "Request local file target -> " + target);
+
+            temp = new File(requestedFile);
+            if (temp.exists() && !temp.isDirectory()) {
+                Log.d(TAG, "handle: found bundle for:" + target);
+            } else {
+                Log.d(TAG, "handle: no bundle found for: " + target);
+                return false;
             }
-            if (body == null) {
-                return BRHTTPHelper.handleError(400, "could not read the file", baseRequest, response);
+
+            Log.i(TAG, "handling: " + target + " " + baseRequest.getMethod());
+            boolean modified = true;
+            byte[] md5 = CryptoHelper.md5(TypesConverter.long2byteArray(temp.lastModified()));
+            String hexEtag = Utils.bytesToHex(md5);
+            response.setHeader("ETag", hexEtag);
+
+            // if the client sends an if-none-match header, determine if we have a newer version of the file
+            String etag = request.getHeader("if-none-match");
+            if (etag != null && etag.equalsIgnoreCase(hexEtag)) modified = false;
+
+            if (modified) {
+                try {
+                    brResp.setBody(FileUtils.readFileToByteArray(temp));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (Utils.isNullOrEmpty(brResp.getBody())) {
+                    return BRHTTPHelper.handleError(400, "could not read the file", baseRequest, response);
+                }
+            } else {
+                APIClient.BRResponse resp = new APIClient.BRResponse(null, 304);
+
+                return BRHTTPHelper.handleSuccess(resp, baseRequest, response);
             }
+            response.setContentType(detectContentType(temp));
+            brResp.setContentType(detectContentType(temp));
+
         } else {
-            return BRHTTPHelper.handleSuccess(304, null, baseRequest, response, null);
-        }
-        response.setContentType(detectContentType(temp));
+            // download the file from the debug endpoint
+            webPlatformDebugURL += target;
 
+            Request debugRequest = new Request.Builder()
+                    .url(webPlatformDebugURL)
+                    .get().build();
+            brResp = APIClient.getInstance(context).sendRequest(debugRequest, false);
+        }
+
+        brResp.setCode(200);
 
         String rangeString = request.getHeader("range");
         if (!Utils.isNullOrEmpty(rangeString)) {
             // Range header should match format "bytes=n-n,n-n,n-n...". If not, then return 416.
             return handlePartialRequest(baseRequest, response, temp);
         } else {
-            return BRHTTPHelper.handleSuccess(200, body, baseRequest, response, null);
+            if (Utils.isNullOrEmpty(brResp.getBody())) {
+                return BRHTTPHelper.handleError(404, "not found", baseRequest, response);
+            } else {
+
+                return BRHTTPHelper.handleSuccess(brResp, baseRequest, response);
+            }
         }
+
     }
 
     private boolean handlePartialRequest(org.eclipse.jetty.server.Request request, HttpServletResponse response, File file) {
@@ -133,7 +175,9 @@ public class HTTPFileMiddleware implements Middleware {
                 response.setHeader("Content-Range", "bytes " + start + "-"
                         + end + "/" + fileLength);
                 byte[] respBody = Arrays.copyOfRange(FileUtils.readFileToByteArray(file), start, contentLength);
-                return BRHTTPHelper.handleSuccess(206, respBody, request, response, detectContentType(file));
+                APIClient.BRResponse resp = new APIClient.BRResponse(respBody, 206, detectContentType(file));
+
+                return BRHTTPHelper.handleSuccess(resp, request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,7 +218,7 @@ public class HTTPFileMiddleware implements Middleware {
             case "js":
                 return "application/javascript";
             case "json":
-                return "application/json";
+                return BRConstants.CONTENT_TYPE_JSON_CHARSET_UTF8;
             default:
                 break;
         }
