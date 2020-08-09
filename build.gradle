@@ -3,6 +3,7 @@ buildscript {
         mavenCentral()
         google()
         jcenter()
+        mavenLocal()
         maven {
             url 'https://dl.bintray.com/drewcarlson/redacted-plugin'
             content {

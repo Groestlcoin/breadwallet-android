@@ -11,6 +11,19 @@ apply plugin: 'io.sweers.redacted.redacted-plugin'
 apply from: file("../gradle/google-services.gradle")
 apply from: file("../gradle/copy-font-files.gradle")
 
+repositories {
+    mavenCentral()
+    google()
+    jcenter()
+    mavenLocal()
+    maven {
+        url 'https://dl.bintray.com/drewcarlson/redacted-plugin'
+        content {
+            includeGroup "io.sweers.redacted"
+        }
+    }
+}
+
 redactedPlugin {
     replacementString = '***'
 }
@@ -237,7 +250,7 @@ clean {
 }
 
 dependencies {
-    implementation "com.breadwallet.core:corecrypto-android:$core_version"
+    implementation "org.groestlcoin.breadwallet.core:corecrypto-android:$core_version"
 
     // AndroidX
     implementation "androidx.lifecycle:lifecycle-extensions:$ax_lifecycle_ext"
