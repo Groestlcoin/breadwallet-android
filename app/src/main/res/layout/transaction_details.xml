@@ -53,7 +53,7 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/total_assets_usd_color"
                     android:textSize="26sp"
-                    tools:text="-0.10965 BTC" />
+                    tools:text="-0.10965 GRS" />
 
                 <com.breadwallet.legacy.presenter.customviews.BaseTextView
                     android:id="@+id/label_when_sent"

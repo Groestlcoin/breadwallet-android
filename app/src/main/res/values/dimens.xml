@@ -36,7 +36,7 @@
     <dimen name="balance_text_margin">8dp</dimen>
 
 
-    <!-- Participate with BRD link wallet dialog -->
+    <!-- Participate with GRS link wallet dialog -->
     <dimen name="link_wallet_dialog_width">360dp</dimen>
     <dimen name="permissions_scrollview_max_height">700dp</dimen>
 

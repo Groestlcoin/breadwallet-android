@@ -313,7 +313,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/inputLayoutAmount"
             app:layout_constraintVertical_bias="0.0"
-            tools:text="Current Balance: 1.2345 BTC"
+            tools:text="Current Balance: 1.2345 GRS"
             tools:visibility="visible" />
 
         <com.breadwallet.legacy.presenter.customviews.BaseTextView
@@ -331,7 +331,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/labelBalance"
             app:layout_goneMarginBottom="8dp"
-            tools:text="Network Fee: 500 BTC"
+            tools:text="Network Fee: 500 GRS"
             tools:visibility="visible" />
 
         <com.breadwallet.legacy.presenter.customviews.BRButton

@@ -229,7 +229,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/send_label"
-            tools:text="0.00105106 BTC ($10.00)"/>
+            tools:text="0.00105106 GRS ($10.00)"/>
 
         <com.breadwallet.legacy.presenter.customviews.BaseTextView
             android:id="@+id/to_address"

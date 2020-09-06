@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <!-- App name -->
-    <string name="About.appName.android">BRD</string>
+    <string name="About.appName.android">GRS</string>
     <!-- About screen blog label -->
     <string name="About.blog">Блог</string>
     <!-- About screen footer -->
-    <string name="About.footer">Создано международной командой BRD. Версия %1$s Сборка %2$s</string>
+    <string name="About.footer">Создано международной командой GRS. Версия %1$s Сборка %2$s</string>
     <!-- Privay Policy button label -->
     <string name="About.privacy">Политика конфиденциальности</string>
     <!-- About screen reddit label -->
@@ -17,7 +17,7 @@
     <!-- About screen twitter label -->
     <string name="About.twitter">Twitter</string>
     <!-- About screen wallet ID label -->
-    <string name="About.walletID">Идентификатор BRD для вознаграждений</string>
+    <string name="About.walletID">Идентификатор GRS для вознаграждений</string>
     <!-- Close modal button accessibility label -->
     <string name="AccessibilityLabels.close">Закрыть</string>
     <!-- Support center accessibiliy label -->
@@ -26,7 +26,7 @@
     <string name="Account.balance">Баланс</string>
     <!-- Delisted token alert banner message -->
     <string name="Account.delistedToken">Регистрация этого токена была отменена из-за того, что эмитент решил прекратить поддержку ERC20. \n\nВероятно, вы все равно можете отправлять эти токены на другую платформу. Для получения дополнительной информации посетите нашу страницу поддержки.</string>
-    <!-- $10000 per BTC -->
+    <!-- $10000 per GRS -->
     <string name="Account.exchangeRate">%1$s за %2$s</string>
     <!-- Loading Wallet Message -->
     <string name="Account.loadingMessage">Загружаем кошелек</string>
@@ -45,7 +45,7 @@
     <!-- Confirm Account Creation Title -->
     <string name="AccountCreation.title">Подтвердите создание аккаунта</string>
     <!-- Default wallet name -->
-    <string name="AccountHeader.defaultWalletName">Мой BRD</string>
+    <string name="AccountHeader.defaultWalletName">Мой GRS</string>
     <!-- Third party keyboard warning -->
     <string name="Alert.customKeyboard.android">Похоже, что вы пользуетесь клавиатурой третьей стороны, которая может записывать последовательность нажимаемых клавиш и похитить ваш Бумажный ключ. Переключитесь на клавиатуру Android по умолчанию для дополнительной защиты.</string>
     <!-- Error alert title -->
@@ -53,11 +53,11 @@
     <!-- Keystore error -->
     <string name="Alert.keystore.generic.android">Имеется проблема с хранилищем ключей в вашей ОС Android, обратитесь по адресу: support@breadwallet.com</string>
     <!-- KeyStore error, keys are invalidated -->
-    <string name="Alert.keystore.invalidated.android">Ваши зашифрованные данные приложения BRD были недавно аннулированы, так как была отключена блокировка экрана вашего устройства Android.</string>
+    <string name="Alert.keystore.invalidated.android">Ваши зашифрованные данные приложения GRS были недавно аннулированы, так как была отключена блокировка экрана вашего устройства Android.</string>
     <!-- Warn user key store data has been invalidate because the user changed their security settings. The user must uninstall. -->
-    <string name="Alert.keystore.invalidated.uninstall.android">Мы не можем продолжить, потому что ваши настройки блокировки экрана были изменены (например, пароль отключен, отпечатки пальцев изменены). В целях безопасности Android навсегда заблокировал ваше хранилище ключей. Поэтому ваши данные BRD следует стереть путем удаления приложения.\n\nНе волнуйтесь, ваши средства в безопасности! Переустановите приложение и восстановите свой кошелек с помощью бумажного ключа.</string>
+    <string name="Alert.keystore.invalidated.uninstall.android">Мы не можем продолжить, потому что ваши настройки блокировки экрана были изменены (например, пароль отключен, отпечатки пальцев изменены). В целях безопасности Android навсегда заблокировал ваше хранилище ключей. Поэтому ваши данные GRS следует стереть путем удаления приложения.\n\nНе волнуйтесь, ваши средства в безопасности! Переустановите приложение и восстановите свой кошелек с помощью бумажного ключа.</string>
     <!-- Warn user key store data has been invalidate because the user changed their security settings. The user must wipe their app data. -->
-    <string name="Alert.keystore.invalidated.wipe.android">Мы не можем продолжить, потому что ваши настройки блокировки экрана были изменены (например, пароль отключен, отпечатки пальцев изменены). В целях безопасности Android навсегда заблокировал ваше хранилище ключей. Поэтому данные вашего приложения BRD необходимо стереть. \nНе волнуйтесь, ваши средства в безопасности! Восстановите свой кошелек, используя бумажный ключ.</string>
+    <string name="Alert.keystore.invalidated.wipe.android">Мы не можем продолжить, потому что ваши настройки блокировки экрана были изменены (например, пароль отключен, отпечатки пальцев изменены). В целях безопасности Android навсегда заблокировал ваше хранилище ключей. Поэтому данные вашего приложения GRS необходимо стереть. \nНе волнуйтесь, ваши средства в безопасности! Восстановите свой кошелек, используя бумажный ключ.</string>
     <!-- Keystore error title -->
     <string name="Alert.keystore.title.android">Ошибка хранилища ключей Android</string>
     <!-- No internet alert message -->
@@ -87,11 +87,11 @@
     <!-- Fingerprint was recognized by the scanner -->
     <string name="Alerts.touchIdSucceeded.android">Отпечаток пальца идентифицирован</string>
     <!-- Tell the user where they can enable permissions to access device storage. -->
-    <string name="Android.allowFileSystemAccess">Включите разрешения на хранение в настройках вашего устройства: «Настройки» &gt; «Приложения» &gt; «BRD» &gt; «Разрешения».</string>
+    <string name="Android.allowFileSystemAccess">Включите разрешения на хранение в настройках вашего устройства: «Настройки» &gt; «Приложения» &gt; «GRS» &gt; «Разрешения».</string>
     <!-- The "home" screen is the name of the top level menu for the app. -->
     <string name="Android.BCH.welcome.message">Доступ к BCH в вашем кошельке теперь возможен с главного экрана.</string>
     <!-- Warning about using apps that can alter the screen -->
-    <string name="Android.screenAlteringMessage">BRD не сможет нормально работать, если не отключить изменяющие экран приложения (такие как Twilight).</string>
+    <string name="Android.screenAlteringMessage">GRS не сможет нормально работать, если не отключить изменяющие экран приложения (такие как Twilight).</string>
     <!-- An app that alters the screen ("screen-altering app") has been detected. -->
     <string name="Android.screenAlteringTitle">Обнаружено изменяющее экран приложение</string>
     <!-- JSON Serialization error message -->
@@ -222,7 +222,7 @@
     <string name="Crowdsale.resume">Возобновить проверку</string>
     <!-- Retry Identity verification button -->
     <string name="Crowdsale.retry">Повторить попытку</string>
-    <!-- Bitcoin denomination picker label -->
+    <!-- Groestlcoin denomination picker label -->
     <string name="DefaultCurrency.bitcoinLabel">Единица отображения биткойна</string>
     <!-- Exchange rate label -->
     <string name="DefaultCurrency.rateLabel">Обменный курс</string>
@@ -241,7 +241,7 @@
     <!-- Email unavailable alert title -->
     <string name="ErrorMessages.emailUnavailableTitle">Электронное письмо недоступно</string>
     <!-- Message that gets shown when we've detected the user has encountered the looping lock-screen bug. (preserve [ ] characters) -->
-    <string name="ErrorMessages.loopingLockScreen.android">BRD невозможно аутентифицировать из-за ошибки в вашей версии Android. [Пожалуйста, нажмите сюда, чтобы узнать подробности.]</string>
+    <string name="ErrorMessages.loopingLockScreen.android">GRS невозможно аутентифицировать из-за ошибки в вашей версии Android. [Пожалуйста, нажмите сюда, чтобы узнать подробности.]</string>
     <!-- Messaging unavailable alert title -->
     <string name="ErrorMessages.messagingUnavailableMessage">Для этого устройства отправка сообщений не настроена.</string>
     <!-- Messaging unavailable alert title -->
@@ -250,14 +250,14 @@
     <string name="ErrorMessages.touchIdFailed.android">Отпечаток пальца не идентифицирован. Повторите попытку.</string>
     <!-- You can customize your Face ID Spending Limit from the [menu] -->
     <string name="FaceIDSettings.customizeText">Вы можете индивидуально настроить ваш лимит расходов Face ID от %1$s.</string>
-    <!-- Text describing the purpose of the Face ID settings in the BRD app. -->
-    <string name="FaceIDSettings.explanatoryText">Используйте Face ID, чтобы разблокировать приложение BRD и отправить деньги.</string>
+    <!-- Text describing the purpose of the Face ID settings in the GRS app. -->
+    <string name="FaceIDSettings.explanatoryText">Используйте Face ID, чтобы разблокировать приложение GRS и отправить деньги.</string>
     <!-- Face Id screen label -->
-    <string name="FaceIDSettings.label">Используйте ваше лицо, чтобы разблокировать ваш BRD и отправить деньги в соответствии с установленным лимитом.</string>
+    <string name="FaceIDSettings.label">Используйте ваше лицо, чтобы разблокировать ваш GRS и отправить деньги в соответствии с установленным лимитом.</string>
     <!-- Title of the screen for setting the Face ID Spending Limit -->
     <string name="FaceIDSettings.linkText">Меню лимита расходов Face ID</string>
-    <!-- Setting to turn on Face ID for BRD -->
-    <string name="FaceIDSettings.switchLabel">Включить Face ID для BRD</string>
+    <!-- Setting to turn on Face ID for GRS -->
+    <string name="FaceIDSettings.switchLabel">Включить Face ID для GRS</string>
     <!-- Face ID settings view title -->
     <string name="FaceIDSettings.title">Face ID</string>
     <!-- Text label for a toggle that enables Face ID for sending money. -->
@@ -266,8 +266,8 @@
     <string name="FaceIDSettings.unavailableAlertMessage">Вы не настроили Face ID на данном устройстве. Перейдите в Настройки-&gt;Face ID и Секретный код, чтобы настроить его сейчас.</string>
     <!-- Face ID unavailable alert title -->
     <string name="FaceIDSettings.unavailableAlertTitle">Face ID не настроена</string>
-    <!-- Text label for a toggle that enables Face ID for unlocking the BRD app. -->
-    <string name="FaceIDSettings.unlockTitleText">Включите Face ID, чтобы разблокировать BRD</string>
+    <!-- Text label for a toggle that enables Face ID for unlocking the GRS app. -->
+    <string name="FaceIDSettings.unlockTitleText">Включите Face ID, чтобы разблокировать GRS</string>
     <!-- Face Id spending limit screen title -->
     <string name="FaceIDSpendingLimit.title">Лимит расходов Face ID</string>
     <!-- Economy fee -->
@@ -293,13 +293,13 @@
     <!-- Label for the Android file chooser when we need to prompt the user to select an image file. -->
     <string name="FileChooser.selectImageSource.android">Выберите источник изображения</string>
     <!-- Fingerprint authentication settings screen description -->
-    <string name="FingerprintSettings.description">Используйте свой отпечаток пальца для разблокировки приложения BRD и отправки транзакций.</string>
+    <string name="FingerprintSettings.description">Используйте свой отпечаток пальца для разблокировки приложения GRS и отправки транзакций.</string>
     <!-- Switch label to enable fingerprint authentication to send money -->
     <string name="FingerprintSettings.sendMoney">Используйте отпечаток пальца, чтобы отправить деньги</string>
     <!-- Fingerprint authentication settings sceen title -->
     <string name="FingerprintSettings.title">Отпечаток пальца</string>
-    <!-- Switch label to enable fingerprint authentication to unlock BRD app -->
-    <string name="FingerprintSettings.unlockApp">Используйте отпечатки пальцев для разблокировки BRD</string>
+    <!-- Switch label to enable fingerprint authentication to unlock GRS app -->
+    <string name="FingerprintSettings.unlockApp">Используйте отпечатки пальцев для разблокировки GRS</string>
     <!-- This is the section that allows administration of the user's wallet -->
     <string name="HomeScreen.admin">Админ</string>
     <!-- Home screen menu button to buy some bitcoin -->
@@ -335,13 +335,13 @@
     <!-- Caption for graphics -->
     <string name="Import.leftCaption">Секретный ключ</string>
     <!-- Import wallet intro screen message -->
-    <string name="Import.message">Секретные ключи часто печатаются на бумаге в виде QR-кода и используются для хранения средств в автономном режиме. Восстановите секретный ключ, чтобы перенести все деньги, которые он контролирует, в BRD с помощью одной транзакции.</string>
+    <string name="Import.message">Секретные ключи часто печатаются на бумаге в виде QR-кода и используются для хранения средств в автономном режиме. Восстановите секретный ключ, чтобы перенести все деньги, которые он контролирует, в GRS с помощью одной транзакции.</string>
     <!-- Enter password alert view title -->
     <string name="Import.password">Этот персональный ключ защищен паролем.</string>
     <!-- password textfield placeholder -->
     <string name="Import.passwordPlaceholder">пароль</string>
     <!-- Caption for graphics -->
-    <string name="Import.rightCaption">Ваш кошелек BRD</string>
+    <string name="Import.rightCaption">Ваш кошелек GRS</string>
     <!-- Scan Private key button label -->
     <string name="Import.scan">Сканировать персональный ключ</string>
     <!-- Import wallet success alert title -->
@@ -361,9 +361,9 @@
     <!-- Ignore jailbreak warning button -->
     <string name="JailbreakWarnings.ignore">Игнорировать</string>
     <!-- Jailbreak warning message -->
-    <string name="JailbreakWarnings.messageWithBalance">БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОДВЕРГНУТА РИСКУ\n Какое-либо приложение по снятию ограничений с файловой системы может получить доступ к данным цепочки ключей  BRD и украсть ваши биткойны! Немедленно очистите ваш кошелек и восстановите его на безопасном устройстве.</string>
+    <string name="JailbreakWarnings.messageWithBalance">БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОДВЕРГНУТА РИСКУ\n Какое-либо приложение по снятию ограничений с файловой системы может получить доступ к данным цепочки ключей  GRS и украсть ваши биткойны! Немедленно очистите ваш кошелек и восстановите его на безопасном устройстве.</string>
     <!-- Jailbreak warning message -->
-    <string name="JailbreakWarnings.messageWithoutBalance">БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОДВЕРГНУТА РИСКУ\n Какое-либо приложение по снятию ограничений с файловой системы может получить доступ к данным цепочки ключей  BRD и украсть ваши биткойны. Пожалуйста, используйте BRD только на устройствах с не снятыми с файловой системы ограничениями.</string>
+    <string name="JailbreakWarnings.messageWithoutBalance">БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОДВЕРГНУТА РИСКУ\n Какое-либо приложение по снятию ограничений с файловой системы может получить доступ к данным цепочки ключей  GRS и украсть ваши биткойны. Пожалуйста, используйте GRS только на устройствах с не снятыми с файловой системы ограничениями.</string>
     <!-- Jailbreak warning title -->
     <string name="JailbreakWarnings.title">ПРЕДУПРЕЖДЕНИЕ</string>
     <!-- Wipe wallet button -->
@@ -385,7 +385,7 @@
     <!-- Location services disabled error -->
     <string name="LocationPlugin.disabled">Сервисы определения местоположения отключены.</string>
     <!-- No permissions for location services -->
-    <string name="LocationPlugin.notAuthorized">У BRD не разрешения на доступ к сервисам определения местоположения.</string>
+    <string name="LocationPlugin.notAuthorized">У GRS не разрешения на доступ к сервисам определения местоположения.</string>
     <!-- Wallet creation date prefix -->
     <string name="ManageWallet.creationDatePrefix">Вы создали ваш кошелек %1$s</string>
     <!-- Manage wallet description text -->
@@ -463,13 +463,13 @@
     <!-- Onboarding screen Page 1 title -->
     <string name="OnboardingPageOne.title">Добро пожаловать в ваш новый кошелек цифровых активов!</string>
     <!-- Onboarding screen Page 3 subtitle -->
-    <string name="OnboardingPageThree.subtitle">Инвестируйте и диверсифицируйте c BRD, просто и безопасно.</string>
+    <string name="OnboardingPageThree.subtitle">Инвестируйте и диверсифицируйте c GRS, просто и безопасно.</string>
     <!-- Onboarding screen Page 3 title -->
     <string name="OnboardingPageThree.title">Покупайте и торгуйте биткойном, токенами и прочими цифровыми валютами.</string>
     <!-- Onboarding screen Page 2 subtitle -->
     <string name="OnboardingPageTwo.subtitle">Под нашей защитой находятся активы общей суммой более 6 миллиардов долларов США.</string>
     <!-- Onboarding screen Page 2 title -->
-    <string name="OnboardingPageTwo.title">Присоединяйтесь к миллионам людей по всему миру, которые доверяют BRD.</string>
+    <string name="OnboardingPageTwo.title">Присоединяйтесь к миллионам людей по всему миру, которые доверяют GRS.</string>
     <!-- Eg. Send 1.0Eth to purchase CCC -->
     <string name="PaymentConfirmation.amountText">Отправить %1$s, чтобы купить %2$s</string>
     <!-- Payment confirmation view title -->
@@ -523,8 +523,8 @@
     <!-- An action is required (You must do this action). -->
     <string name="Prompts.PaperKey.title">Необходимо совершить действие</string>
     <string name="Prompts.RateApp.dontShow">Не спрашивай снова</string>
-    <string name="Prompts.RateApp.enjoyingBrd">Наслаждаешься BRD?</string>
-    <string name="Prompts.RateApp.googlePlayReview">Ваш отзыв помогает развивать сообщество BRD.</string>
+    <string name="Prompts.RateApp.enjoyingBrd">Наслаждаешься GRS?</string>
+    <string name="Prompts.RateApp.googlePlayReview">Ваш отзыв помогает развивать сообщество GRS.</string>
     <string name="Prompts.RateApp.noThanks">Нет, спасибо</string>
     <string name="Prompts.RateApp.rateUs">Обзор нас</string>
     <!-- Transaction rejected prompt body -->
@@ -532,7 +532,7 @@
     <!-- Transaction rejected prompt title -->
     <string name="Prompts.RecommendRescan.title">Транзакция отклонена</string>
     <!-- Share data prompt body -->
-    <string name="Prompts.ShareData.body">Помогите улучшить BRD, поделившись с нами своими анонимными данными</string>
+    <string name="Prompts.ShareData.body">Помогите улучшить GRS, поделившись с нами своими анонимными данными</string>
     <!-- Share data prompt title -->
     <string name="Prompts.ShareData.title">Поделиться анонимными данными</string>
     <!-- Enable touch ID prompt body -->
@@ -546,7 +546,7 @@
     <!-- Button on fingerprint prompt so the user can enter their PIN instead -->
     <string name="Prompts.TouchId.usePin.android">PIN-код</string>
     <!-- Upgrade PIN prompt body. -->
-    <string name="Prompts.UpgradePin.body">BRD обновил свой интерфейс до использования 6-цифрового PIN-кода. Коснитесь здесь для обновления.</string>
+    <string name="Prompts.UpgradePin.body">GRS обновил свой интерфейс до использования 6-цифрового PIN-кода. Коснитесь здесь для обновления.</string>
     <!-- Upgrade PIN prompt title. -->
     <string name="Prompts.UpgradePin.title">Обновить PIN-код</string>
     <!-- Body text for the push notifications prompt. -->
@@ -554,11 +554,11 @@
     <!-- Push notifications are disabled alert title" -->
     <string name="PushNotifications.disabled">Уведомления Отключены</string>
     <!-- Body text when push notifications are disabled. -->
-    <string name="PushNotifications.disabledBody">Включите уведомления, чтобы получать спецпредложения и новости от BRD.</string>
+    <string name="PushNotifications.disabledBody">Включите уведомления, чтобы получать спецпредложения и новости от GRS.</string>
     <!-- Body text when push notifications are enabled. -->
-    <string name="PushNotifications.enabledBody">Вы получаете спецпредложения и новости от BRD.</string>
-    <!-- Instructions to enable push notifications for BRD in the phone's system settings. -->
-    <string name="PushNotifications.enableInstructions">Похоже, уведомления отключены. Перейдите в настройки, чтобы включить уведомления от BRD.</string>
+    <string name="PushNotifications.enabledBody">Вы получаете спецпредложения и новости от GRS.</string>
+    <!-- Instructions to enable push notifications for GRS in the phone's system settings. -->
+    <string name="PushNotifications.enableInstructions">Похоже, уведомления отключены. Перейдите в настройки, чтобы включить уведомления от GRS.</string>
     <!-- Push notifications toggle switch label -->
     <string name="PushNotifications.label">Получать Push-уведомления</string>
     <!-- Push notifications are off label -->
@@ -574,9 +574,9 @@
     <!-- Google play review prompt, revivew button -->
     <string name="RateAppPrompt.Button.Dismiss.Android">Нет, спасибо</string>
     <!-- Google play review prompt, dismiss button -->
-    <string name="RateAppPrompt.Button.RateApp.Android">Оцените BRD</string>
+    <string name="RateAppPrompt.Button.RateApp.Android">Оцените GRS</string>
     <!-- Google play review prompt title -->
-    <string name="RateAppPrompt.Title.Android">Оцените BRD</string>
+    <string name="RateAppPrompt.Title.Android">Оцените GRS</string>
     <!-- Address copied message. -->
     <string name="Receive.copied">Скопировано в буфер обмена.</string>
     <!-- Share via email button label -->
@@ -598,7 +598,7 @@
     <!-- Enter paper key instruction -->
     <string name="RecoverWallet.instruction">Введите бумажный ключ</string>
     <!-- Recover wallet intro -->
-    <string name="RecoverWallet.intro">Восстановите Ваш BRD-кошелек с помощью бумажного ключа.</string>
+    <string name="RecoverWallet.intro">Восстановите Ваш GRS-кошелек с помощью бумажного ключа.</string>
     <!-- Invalid paper key message -->
     <string name="RecoverWallet.invalid">Введенный вами бумажный ключ недействителен. Пожалуйста, внимательно перепроверьте каждое слово и повторите попытку.</string>
     <!-- Previous button accessibility label -->
@@ -657,14 +657,14 @@
     <string name="RecoveryKeyFlow.rememberToWriteDownReminder">Не забудьте записать эти слова. Вернитесь к предыдущему шагу, если вы забыли это сделать.</string>
     <!-- Instruction displayed when the user is resetting the PIN, which requires the recovery key to be entered -->
     <string name="RecoveryKeyFlow.resetPINInstruction">Пожалуйста, введите ваш ключ восстановления, чтобы сбросить ваш PIN-код.</string>
-    <!-- Assures the user that BRD will keep the user's funds secure. -->
+    <!-- Assures the user that GRS will keep the user's funds secure. -->
     <string name="RecoveryKeyFlow.securityAssurance">Покупайте и торгуйте, зная, что ваши средства защищены лучшей системой безопасности и конфиденциальности в этой сфере.</string>
     <!-- Recommends that the user stores the recovery key in a secure location -->
-    <string name="RecoveryKeyFlow.storeSecurelyRecommendation">Храните ваш ключ в безопасном месте. Только с помощью него вы сможете восстановить ваш кошелек. BRD не хранит его копию.</string>
+    <string name="RecoveryKeyFlow.storeSecurelyRecommendation">Храните ваш ключ в безопасном месте. Только с помощью него вы сможете восстановить ваш кошелек. GRS не хранит его копию.</string>
     <!-- Title for the success page after the recovery key has been set up -->
     <string name="RecoveryKeyFlow.successHeading">Поздравляем! Вы закончили настройку ключа восстановления.</string>
     <!-- Subtitle for the success page after the recovery key has been set up -->
-    <string name="RecoveryKeyFlow.successSubheading">Теперь вы готовы вносить депозит, торговать и покупать криптовалюту из вашего кошелька BRD.</string>
+    <string name="RecoveryKeyFlow.successSubheading">Теперь вы готовы вносить депозит, торговать и покупать криптовалюту из вашего кошелька GRS.</string>
     <!-- Title displayed to the user on the intro screen when unlinking a wallet -->
     <string name="RecoveryKeyFlow.unlinkWallet">Отвяжите ваш кошелек от этого устройства.</string>
     <!-- Subtitle displayed to the user on the intro screen when unlinking a wallet. -->
@@ -698,7 +698,7 @@
     <!-- extimated time -->
     <string name="ReScan.body1">20-45 минут</string>
     <!-- Syncing explanation -->
-    <string name="ReScan.body2">Если транзакция описывается как \"выполненная\" в биткойн-сети, но не в вашем BRD-кошельке.</string>
+    <string name="ReScan.body2">Если транзакция описывается как \"выполненная\" в биткойн-сети, но не в вашем GRS-кошельке.</string>
     <!-- Syncing explanation -->
     <string name="ReScan.body3">Вы несколько раз получили ошибку о том, что транзакция отвергнута.</string>
     <!-- Start Sync button label -->
@@ -714,12 +714,12 @@
     <!-- Rewards view expanded body. -->
     <string name="RewardsView.expandedBody">Узнайте как сэкономить на комиссионных обменах и открыть будущие бонусы.</string>
     <!-- Rewards view expanded title. -->
-    <string name="RewardsView.expandedTitle">Представляем Бонусы BRD.</string>
+    <string name="RewardsView.expandedTitle">Представляем Бонусы GRS.</string>
     <!-- Rewards view title -->
     <string name="RewardsView.normalTitle">Бонусы</string>
     <!-- Scan bitcoin address camera flash toggle -->
     <string name="Scanner.flashButtonLabel">Вспышка камеры</string>
-    <!-- (alert dialog message) Would you like to send a [Bitcoin / Bitcoin Cash / Ethereum] payment to this address?") -->
+    <!-- (alert dialog message) Would you like to send a [Groestlcoin / Groestlcoin Cash / Ethereum] payment to this address?") -->
     <string name="Scanner.paymentPromptMessage">Вы хотите отправить %1$@ платеж на этот адрес?</string>
     <!-- alert dialog title -->
     <string name="Scanner.paymentPromptTitle">Отправить платеж</string>
@@ -743,11 +743,11 @@
     <!-- Paper Key button title -->
     <string name="SecurityCenter.paperKeyTitle.android">Бумажный ключ</string>
     <!-- PIN button description -->
-    <string name="SecurityCenter.pinDescription">Защищает ваш BRD от несанкционированных пользователей.</string>
+    <string name="SecurityCenter.pinDescription">Защищает ваш GRS от несанкционированных пользователей.</string>
     <!-- PIN button title -->
     <string name="SecurityCenter.pinTitle">6-цифровой PIN-код</string>
     <!-- Touch ID button description -->
-    <string name="SecurityCenter.touchIdDescription">Легко и просто разблокируйте ваш BRD-кошелек и отправляйте суммы, не превышающие ваш лимит на расходы.</string>
+    <string name="SecurityCenter.touchIdDescription">Легко и просто разблокируйте ваш GRS-кошелек и отправляйте суммы, не превышающие ваш лимит на расходы.</string>
     <!-- Touch ID button title -->
     <string name="SecurityCenter.touchIdTitle">Touch ID</string>
     <!-- Security center fingerprint authentication button -->
@@ -757,7 +757,7 @@
     <!-- Segwit enabled confirmation description -->
     <string name="Segwit.ConfirmationInstructionsDescription">Благодарим вас за продвижение биткоина.</string>
     <!-- Segwit instructions -->
-    <string name="Segwit.ConfirmationInstructionsInstructions">Поддержка SegWit еще является бета-функцией.\nС момента активации функции SegWit ее нельзя будет отключить. Вы сможете найти унаследованный адрес в Настройках. \nНекоторые услуги третьей стороны, включая крипто-трейдинг, могут быть недоступными для пользователей, которые активировали SegWit. В случае крайней необходимости, вы сможете генерировать унаследованный адрес, зайдя в Preferences (Параметры) &gt; Bitcoin Settings (Настройки биткоина). \nВ будущем обновлении SegWit будет автоматически активирована для всех пользователей.</string>
+    <string name="Segwit.ConfirmationInstructionsInstructions">Поддержка SegWit еще является бета-функцией.\nС момента активации функции SegWit ее нельзя будет отключить. Вы сможете найти унаследованный адрес в Настройках. \nНекоторые услуги третьей стороны, включая крипто-трейдинг, могут быть недоступными для пользователей, которые активировали SegWit. В случае крайней необходимости, вы сможете генерировать унаследованный адрес, зайдя в Preferences (Параметры) &gt; Groestlcoin Settings (Настройки биткоина). \nВ будущем обновлении SegWit будет автоматически активирована для всех пользователей.</string>
     <!-- Segwit extra confirmation title. -->
     <string name="Segwit.ConfirmChoiceLayout">Активация SegWit является необратимой функцией. Вы уверены, что хотите продолжить?</string>
     <!-- Segwit enableButton -->
@@ -769,13 +769,13 @@
     <!-- Balance: $4.00 -->
     <string name="Send.balance">Баланс: %1$s</string>
     <!-- Instructions how to allow the camera access for the app -->
-    <string name="Send.cameraUnavailabeMessage.android">Разрешить доступ к камере в: \"Настройки\" &gt; \"Приложения\" &gt; \"BRD\" &gt; \"Разрешения\"</string>
+    <string name="Send.cameraUnavailabeMessage.android">Разрешить доступ к камере в: \"Настройки\" &gt; \"Приложения\" &gt; \"GRS\" &gt; \"Разрешения\"</string>
     <!-- Permission required to access camera -->
-    <string name="Send.cameraUnavailabeTitle.android">Приложению BRD не разрешен доступ к камере</string>
+    <string name="Send.cameraUnavailabeTitle.android">Приложению GRS не разрешен доступ к камере</string>
     <!-- Camera not allowed message -->
     <string name="Send.cameraunavailableMessage">Перейдите в \"Настройки\", чтобы разрешить доступ к камере.</string>
     <!-- Camera not allowed alert title -->
-    <string name="Send.cameraUnavailableTitle">BRD не имеет разрешения на доступ к камере</string>
+    <string name="Send.cameraUnavailableTitle">GRS не имеет разрешения на доступ к камере</string>
     <!-- Warning when sending to self. -->
     <string name="Send.containsAddress">Место назначения является вашим собственным адресом. Вы не можете отправить деньги самому себе.</string>
     <!-- Could not create transaction alert title -->
@@ -809,7 +809,7 @@
     <!-- Is rescanning error message -->
     <string name="Send.isRescanning">Отправка отключена во время полного сканирования.</string>
     <!-- Warning when the user is trying to send bitcoin cash to a legacy bitcoin address (possible, but probably not what the user wants to do) -->
-    <string name="Send.legacyAddressWarning">Внимание: это унаследованный биткойн-адрес. Вы уверены, что хотите отправить криптовалюту Bitcoin Cash на него?</string>
+    <string name="Send.legacyAddressWarning">Внимание: это унаследованный биткойн-адрес. Вы уверены, что хотите отправить криптовалюту Groestlcoin Cash на него?</string>
     <!-- We are loading the request (now) -->
     <string name="Send.loadingRequest">Загрузка запроса</string>
     <!-- Hedera Memo Tag Label -->
@@ -873,7 +873,7 @@
     <!-- Enable segwit. -->
     <string name="Settings.EnableSegwit">Активировать Segwit</string>
     <!-- Are you enjoying bread alert message body -->
-    <string name="Settings.enjoying">Нравится ли вам использовать BRD?</string>
+    <string name="Settings.enjoying">Нравится ли вам использовать GRS?</string>
     <!-- Face ID spending limit label -->
     <string name="Settings.faceIdLimit">Лимит расходов Face ID</string>
     <!-- Redeem the funds stored on this private key. -->
@@ -904,9 +904,9 @@
     <string name="Settings.touchIdLimit.android">Расходный лимит с аутентификацией по отпечаткам пальцев</string>
     <!-- View legacy address (old format). -->
     <string name="Settings.ViewLegacyAddress">Просмотреть унаследованный адрес</string>
-    <!-- Receive Bitcoin instructions -->
-    <string name="Settings.ViewLegacyAddressReceiveDescription">Отправляйте на этот адрес только биткоин (BTC). Любые другие активы, отправленные на этот адрес, будут безвозвратно потеряны.</string>
-    <!-- Receive Bitcoin -->
+    <!-- Receive Groestlcoin instructions -->
+    <string name="Settings.ViewLegacyAddressReceiveDescription">Отправляйте на этот адрес только биткоин (GRS). Любые другие активы, отправленные на этот адрес, будут безвозвратно потеряны.</string>
+    <!-- Receive Groestlcoin -->
     <string name="Settings.ViewLegacyAddressReceiveTitle">Получить биткоин</string>
     <!-- Wallet Settings section header -->
     <string name="Settings.wallet">Кошелек</string>
@@ -915,7 +915,7 @@
     <!-- Wipe/delete your wallet from the current device. -->
     <string name="Settings.wipe.android">Отвяжите ваш кошелек от этого устройства.</string>
     <!-- Share data view body -->
-    <string name="ShareData.body">Помогите нам улучшить BRD, поделившись своими анонимными данными. Такие данные не включают какую-либо финансовую информацию. Мы уважаем вашу финансовую конфиденциальность.</string>
+    <string name="ShareData.body">Помогите нам улучшить GRS, поделившись своими анонимными данными. Такие данные не включают какую-либо финансовую информацию. Мы уважаем вашу финансовую конфиденциальность.</string>
     <!-- Share data header -->
     <string name="ShareData.header">Поделиться данными?</string>
     <!-- Share data switch label. -->
@@ -923,9 +923,9 @@
     <!-- button label -->
     <string name="StartPaperPhrase.againButtonTitle">Выписать бумажный ключ снова</string>
     <!-- Paper key explanation text. -->
-    <string name="StartPaperPhrase.body">Бумажный ключ – это единственный способ восстановить ваш BRD-кошелек в случае потери, кражи, поломки или замены вашего телефона.\n\nМы покажем вам список слов, которые необходимо записать на листе бумаги и хранить в надежном месте.</string>
+    <string name="StartPaperPhrase.body">Бумажный ключ – это единственный способ восстановить ваш GRS-кошелек в случае потери, кражи, поломки или замены вашего телефона.\n\nМы покажем вам список слов, которые необходимо записать на листе бумаги и хранить в надежном месте.</string>
     <!-- Paper key explanation text (Android-version) -->
-    <string name="StartPaperPhrase.Body.Android">Бумажный ключ — это единственный способ восстановить ваш кошелек BRD в случае, если ваш телефон окажется утерян, украден, сломан или обновлен.\n\nБумажный ключ будет также необходим, если вы измените настройки безопасности на вашем устройстве.\n\nМы покажем вам список слов, которые необходимо записать на бумаге и хранить в безопасном месте.</string>
+    <string name="StartPaperPhrase.Body.Android">Бумажный ключ — это единственный способ восстановить ваш кошелек GRS в случае, если ваш телефон окажется утерян, украден, сломан или обновлен.\n\nБумажный ключ будет также необходим, если вы измените настройки безопасности на вашем устройстве.\n\nМы покажем вам список слов, которые необходимо записать на бумаге и хранить в безопасном месте.</string>
     <!-- button label -->
     <string name="StartPaperPhrase.buttonTitle">Выписать бумажный ключ</string>
     <!-- Argument is date; date should be on a new line -->
@@ -982,16 +982,16 @@
     <string name="TouchIdSettings.disabledWarning.body.android">Вы не включили аутентификацию по отпечаткам пальцев на данном устройстве. Перейдите в \"Настройки\" -&gt; \"Безопасность\", чтобы настроить аутентификацию по отпечаткам пальцев.</string>
     <!-- Fingerprint Is Not Setup -->
     <string name="TouchIdSettings.disabledWarning.title.android">Аутентификация по отпечаткам пальцев не включена</string>
-    <!-- Text that describes the purpose of the Touch ID settings in the BRD app. -->
-    <string name="TouchIdSettings.explanatoryText">Используйте Touch ID, чтобы разблокировать приложение BRD и отправить деньги.</string>
+    <!-- Text that describes the purpose of the Touch ID settings in the GRS app. -->
+    <string name="TouchIdSettings.explanatoryText">Используйте Touch ID, чтобы разблокировать приложение GRS и отправить деньги.</string>
     <!-- Touch Id screen label -->
-    <string name="TouchIdSettings.label">Используйте отпечатки ваших пальцев для разблокирования BRD-кошелька и отправки сумм, не превышающих ваш лимит на расходы.</string>
+    <string name="TouchIdSettings.label">Используйте отпечатки ваших пальцев для разблокирования GRS-кошелька и отправки сумм, не превышающих ваш лимит на расходы.</string>
     <!-- Link Text (see TouchIdSettings.customizeText) -->
     <string name="TouchIdSettings.linkText">Экран лимита расходов Touch ID</string>
     <!-- Spending Limit: b100,000 ($100) -->
     <string name="TouchIdSettings.spendingLimit">Лимит на расходы: %1$s (%2$s)</string>
     <!-- Touch id switch label. -->
-    <string name="TouchIdSettings.switchLabel">Активировать функцию Touch ID для BRD</string>
+    <string name="TouchIdSettings.switchLabel">Активировать функцию Touch ID для GRS</string>
     <!-- Enable fingerprint for this wallet called Bread -->
     <string name="TouchIdSettings.switchLabel.android">Включить аутентификацию по отпечаткам пальцев</string>
     <!-- Touch ID settings view title -->
@@ -1004,8 +1004,8 @@
     <string name="TouchIdSettings.unavailableAlertMessage">Вы не задали функцию Touch ID на этом устройстве. Перейдите в \"Настройки\"-&gt;\"Touch ID и Код доступа\", чтобы задать ее сейчас.</string>
     <!-- Touch ID unavailable alert title -->
     <string name="TouchIdSettings.unavailableAlertTitle">Функция Touch ID не задана</string>
-    <!-- Text label for the toggle that enables Touch ID for unlocking the BRD app. -->
-    <string name="TouchIdSettings.unlockTitleText">Включите Touch ID, чтобы разблокировать BRD</string>
+    <!-- Text label for the toggle that enables Touch ID for unlocking the GRS app. -->
+    <string name="TouchIdSettings.unlockTitleText">Включите Touch ID, чтобы разблокировать GRS</string>
     <!-- Always require passcode option -->
     <string name="TouchIdSpendingLimit">Всегда требовать код доступа к устройству</string>
     <!-- Touch ID spending limit screen body -->
@@ -1046,7 +1046,7 @@
     <string name="Transaction.sentTo">отправлено по адресу %1$s</string>
     <!-- eg. Starting balance: $50.00 -->
     <string name="Transaction.starting">Начальный баланс: %1$s</string>
-    <!-- e.g. "[The money you paid was a] Fee for token transfer: BRD" (BRD is the token that was transfered) -->
+    <!-- e.g. "[The money you paid was a] Fee for token transfer: GRS" (GRS is the token that was transfered) -->
     <string name="Transaction.tokenTransfer">Сбор за передачу токена: %1$s</string>
     <!-- Waiting to be confirmed string -->
     <string name="Transaction.waiting">Ожидает подтверждения. Некоторые продавцы требуют подтверждения для выполнения транзакции. Предполагаемое время: 1-2 часа.</string>
@@ -1162,7 +1162,7 @@
     <!-- Instruction to touch the sensor for fingerprint authentication -->
     <string name="UnlockScreen.touchIdInstructions.android">Датчик касания</string>
     <!-- TouchID prompt text -->
-    <string name="UnlockScreen.touchIdPrompt">Разблокируйте ваш BRD-кошелек.</string>
+    <string name="UnlockScreen.touchIdPrompt">Разблокируйте ваш GRS-кошелек.</string>
     <!-- Device authentication body -->
     <string name="UnlockScreen.touchIdPrompt.android">Разблокируйте ваше устройство Android, чтобы продолжить.</string>
     <!-- Unlock with TouchID accessibility label -->
@@ -1172,7 +1172,7 @@
     <!-- Update PIN caption text -->
     <string name="UpdatePin.caption">Запомните этот PIN-код. Если вы его забудете, что не сможете получить доступ к вашим биткойнам.</string>
     <!-- PIN creation info. -->
-    <string name="UpdatePin.createInstruction">Ваш PIN-код будет использоваться для разблокировки кошелька BRD и отправки денег.</string>
+    <string name="UpdatePin.createInstruction">Ваш PIN-код будет использоваться для разблокировки кошелька GRS и отправки денег.</string>
     <!-- Update PIN title -->
     <string name="UpdatePin.createTitle">Задайте PIN-код</string>
     <!-- Update PIN title -->
@@ -1223,7 +1223,7 @@
     <!-- Wallet connection settings view title -->
     <string name="WalletConnectionSettings.viewTitle">Fastsync</string>
     <!-- 'No wallet' warning for watch app -->
-    <string name="Watch.noWalletWarning">Запустите BRD-приложение для iPhone, чтобы настроить ваш кошелек.</string>
+    <string name="Watch.noWalletWarning">Запустите GRS-приложение для iPhone, чтобы настроить ваш кошелек.</string>
     <!-- Dismiss button label -->
     <string name="Webview.dismiss">Отклонить</string>
     <!-- Webview loading error message -->
@@ -1231,9 +1231,9 @@
     <!-- Updating webview message -->
     <string name="Webview.updating">Идет обновление...</string>
     <!-- Welcome screen text. (?) will be replaced with the help icon users should look for. -->
-    <string name="Welcome.body">Breadwallet сменил свое название на BRD и обзавелся новым дизайном и функциями.\n\nЕсли вам нужна помощь, то ищите иконку (?) в правом верхнем углу большинства экранов.</string>
+    <string name="Welcome.body">Breadwallet сменил свое название на GRS и обзавелся новым дизайном и функциями.\n\nЕсли вам нужна помощь, то ищите иконку (?) в правом верхнем углу большинства экранов.</string>
     <!-- Top title of welcome screen -->
-    <string name="Welcome.title">Добро пожаловать в BRD!</string>
+    <string name="Welcome.title">Добро пожаловать в GRS!</string>
     <!-- Wipe wallet alert message -->
     <string name="WipeWallet.alertMessage">Вы действительно хотите удалить этот кошелек?</string>
     <!-- Wipe wallet alert title -->
@@ -1247,7 +1247,7 @@
     <!-- Instructions for unlinking the wallet -->
     <string name="WipeWallet.startMessage">Отвязать ваш кошелек, чтобы удалить его с этого устройства. Как только вы отвяжете этот кошелек, вы сможете открыть новый кошелек или восстановить другой на этом устройстве.</string>
     <!-- Start wipe wallet view warning -->
-    <string name="WipeWallet.startWarning">Вы больше не сможете получить доступ к текущему кошельку BRD с этого устройства. Ваш баланс останется на этой фразе.</string>
+    <string name="WipeWallet.startWarning">Вы больше не сможете получить доступ к текущему кошельку GRS с этого устройства. Ваш баланс останется на этой фразе.</string>
     <!-- Unlink this wallet from this device. -->
     <string name="WipeWallet.title">Отвязать кошелек</string>
     <!-- Wipe wallet button title -->

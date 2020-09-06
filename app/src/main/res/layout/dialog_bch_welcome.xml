@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:text="BRD now supports Bitcoin Cash!"
+        android:text="GRS now supports Groestlcoin Cash!"
         android:textSize="18sp"
         android:fontFamily="@font/mobile_font_book" />
 
