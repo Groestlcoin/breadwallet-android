@@ -241,7 +241,7 @@ class SettingsScreenHandler(
             addOn = BRSharedPrefs.getPreferredFiatIso()
         ),
         SettingsItem(
-            "Bitcoin ${context.getString(R.string.Settings_title)}", // TODO move Bitcoin to a constant
+            "Groestlcoin ${context.getString(R.string.Settings_title)}", // TODO move Bitcoin to a constant
             SettingsOption.BTC_MENU
         ),
         SettingsItem(
