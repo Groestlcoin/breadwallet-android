@@ -991,7 +991,7 @@
     <!-- Spending Limit: b100,000 ($100) -->
     <string name="TouchIdSettings.spendingLimit">Limite de Gastos: %1$s (%2$s)</string>
     <!-- Touch id switch label. -->
-    <string name="TouchIdSettings.switchLabel">Ativar Touch ID para a BRD</string>
+    <string name="TouchIdSettings.switchLabel">Ativar Touch ID para a GRS</string>
     <!-- Enable fingerprint for this wallet called Bread -->
     <string name="TouchIdSettings.switchLabel.android">Ativar a Autenticação por Impressão Digital</string>
     <!-- Touch ID settings view title -->
@@ -1004,8 +1004,8 @@
     <string name="TouchIdSettings.unavailableAlertMessage">Não definiu o Touch ID neste dispositivo. Vá a Definições-&gt;Touch ID e Código para o configurar agora.</string>
     <!-- Touch ID unavailable alert title -->
     <string name="TouchIdSettings.unavailableAlertTitle">Touch ID Não Configurado</string>
-    <!-- Text label for the toggle that enables Touch ID for unlocking the BRD app. -->
-    <string name="TouchIdSettings.unlockTitleText">Ativar o Touch ID para abrir BRD</string>
+    <!-- Text label for the toggle that enables Touch ID for unlocking the GRS app. -->
+    <string name="TouchIdSettings.unlockTitleText">Ativar o Touch ID para abrir GRS</string>
     <!-- Always require passcode option -->
     <string name="TouchIdSpendingLimit">Pedir sempre um código de acesso</string>
     <!-- Touch ID spending limit screen body -->
@@ -1046,7 +1046,7 @@
     <string name="Transaction.sentTo">enviado para %1$s</string>
     <!-- eg. Starting balance: $50.00 -->
     <string name="Transaction.starting">Saldo inicial: %1$s</string>
-    <!-- e.g. "[The money you paid was a] Fee for token transfer: BRD" (BRD is the token that was transfered) -->
+    <!-- e.g. "[The money you paid was a] Fee for token transfer: GRS" (GRS is the token that was transfered) -->
     <string name="Transaction.tokenTransfer">Taxa para transferência de token: %1$s</string>
     <!-- Waiting to be confirmed string -->
     <string name="Transaction.waiting">À espera de confirmação. Alguns comerciantes necessitam de confirmação para concluir uma transação. Tempo estimado: 1-2 horas.</string>
@@ -1162,7 +1162,7 @@
     <!-- Instruction to touch the sensor for fingerprint authentication -->
     <string name="UnlockScreen.touchIdInstructions.android">Sensor de Toque</string>
     <!-- TouchID prompt text -->
-    <string name="UnlockScreen.touchIdPrompt">Desbloqueie a sua BRD.</string>
+    <string name="UnlockScreen.touchIdPrompt">Desbloqueie a sua GRS.</string>
     <!-- Device authentication body -->
     <string name="UnlockScreen.touchIdPrompt.android">Desbloqueie o seu dispositivo Android para continuar.</string>
     <!-- Unlock with TouchID accessibility label -->
@@ -1172,7 +1172,7 @@
     <!-- Update PIN caption text -->
     <string name="UpdatePin.caption">Lembre-se deste PIN. Se o esquecer, não será capaz de aceder às suas bitcoins.</string>
     <!-- PIN creation info. -->
-    <string name="UpdatePin.createInstruction">O seu PIN será usado para desbloquear a sua BRD e para enviar dinheiro.</string>
+    <string name="UpdatePin.createInstruction">O seu PIN será usado para desbloquear a sua GRS e para enviar dinheiro.</string>
     <!-- Update PIN title -->
     <string name="UpdatePin.createTitle">Definir PIN</string>
     <!-- Update PIN title -->
@@ -1223,7 +1223,7 @@
     <!-- Wallet connection settings view title -->
     <string name="WalletConnectionSettings.viewTitle">Fastsync</string>
     <!-- 'No wallet' warning for watch app -->
-    <string name="Watch.noWalletWarning">Abra a aplicação BRD para iPhone para configurar a sua carteira.</string>
+    <string name="Watch.noWalletWarning">Abra a aplicação GRS para iPhone para configurar a sua carteira.</string>
     <!-- Dismiss button label -->
     <string name="Webview.dismiss">Ignorar</string>
     <!-- Webview loading error message -->
@@ -1231,9 +1231,9 @@
     <!-- Updating webview message -->
     <string name="Webview.updating">A Atualizar...</string>
     <!-- Welcome screen text. (?) will be replaced with the help icon users should look for. -->
-    <string name="Welcome.body">As Breadwallets mudaram de nome para BRD, com um visual completamente novo e algumas características novas. \n\nSe precisar de ajuda, procure o (?) no canto superior direito da maioria das telas.</string>
+    <string name="Welcome.body">As Breadwallets mudaram de nome para GRS, com um visual completamente novo e algumas características novas. \n\nSe precisar de ajuda, procure o (?) no canto superior direito da maioria das telas.</string>
     <!-- Top title of welcome screen -->
-    <string name="Welcome.title">Bem-vindo ao BRD!</string>
+    <string name="Welcome.title">Bem-vindo ao GRS!</string>
     <!-- Wipe wallet alert message -->
     <string name="WipeWallet.alertMessage">Tem a certeza de que quer eliminar esta carteira?</string>
     <!-- Wipe wallet alert title -->
@@ -1247,7 +1247,7 @@
     <!-- Instructions for unlinking the wallet -->
     <string name="WipeWallet.startMessage">Elimine a ligação à sua carteira, a fim de a remover deste dispositivo. Assim que a ligação à carteira tiver sido eliminada, pode iniciar uma nova carteira ou recuperar outra carteira neste dispositivo.</string>
     <!-- Start wipe wallet view warning -->
-    <string name="WipeWallet.startWarning">Não poderá mais aceder à sua BRD wallet a partir deste dispositivo. O saldo permanecerá na frase.</string>
+    <string name="WipeWallet.startWarning">Não poderá mais aceder à sua GRS wallet a partir deste dispositivo. O saldo permanecerá na frase.</string>
     <!-- Unlink this wallet from this device. -->
     <string name="WipeWallet.title">Eliminar a ligação à carteira</string>
     <!-- Wipe wallet button title -->

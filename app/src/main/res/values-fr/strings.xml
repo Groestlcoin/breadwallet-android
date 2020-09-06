@@ -923,9 +923,9 @@
     <!-- button label -->
     <string name="StartPaperPhrase.againButtonTitle">Enregistrez la clé papier à nouveau</string>
     <!-- Paper key explanation text. -->
-    <string name="StartPaperPhrase.body">Votre clé papier est la seule façon de restaurer votre BRD si votre téléphone est perdu, volé, cassé ou mis à niveau.\n\nNous allons vous montrer une liste de mots à écrire sur un morceau de papier et à garder en sécurité.</string>
+    <string name="StartPaperPhrase.body">Votre clé papier est la seule façon de restaurer votre GRS si votre téléphone est perdu, volé, cassé ou mis à niveau.\n\nNous allons vous montrer une liste de mots à écrire sur un morceau de papier et à garder en sécurité.</string>
     <!-- Paper key explanation text (Android-version) -->
-    <string name="StartPaperPhrase.Body.Android">Votre clé papier est la seule façon de restaurer votre BRD si votre téléphone est perdu, volé, cassé ou changé. \n\nVotre clé papier est également nécessaire si vous modifiez les paramètres de sécurité de votre appareil.\n\nNous afficherons une liste de mots que vous devrez noter sur un papier et conserver en sécurité.</string>
+    <string name="StartPaperPhrase.Body.Android">Votre clé papier est la seule façon de restaurer votre GRS si votre téléphone est perdu, volé, cassé ou changé. \n\nVotre clé papier est également nécessaire si vous modifiez les paramètres de sécurité de votre appareil.\n\nNous afficherons une liste de mots que vous devrez noter sur un papier et conserver en sécurité.</string>
     <!-- button label -->
     <string name="StartPaperPhrase.buttonTitle">Écrire la clé papier</string>
     <!-- Argument is date; date should be on a new line -->
@@ -982,16 +982,16 @@
     <string name="TouchIdSettings.disabledWarning.body.android">Vous n\'avez pas activé l\'identification par empreinte digitale sur cet appareil. Allez dans « Paramètres », puis dans « Sécurité », pour configurer l\'identification par empreinte digitale</string>
     <!-- Fingerprint Is Not Setup -->
     <string name="TouchIdSettings.disabledWarning.title.android">L\'identification par empreinte digitale n\'est pas activée</string>
-    <!-- Text that describes the purpose of the Touch ID settings in the BRD app. -->
-    <string name="TouchIdSettings.explanatoryText">Utilisez Touch ID pour déverrouiller votre application BRD et envoyer de l\'argent.</string>
+    <!-- Text that describes the purpose of the Touch ID settings in the GRS app. -->
+    <string name="TouchIdSettings.explanatoryText">Utilisez Touch ID pour déverrouiller votre application GRS et envoyer de l\'argent.</string>
     <!-- Touch Id screen label -->
-    <string name="TouchIdSettings.label">Utilisez votre empreinte digitale pour débloquer votre BRD et envoyer de l\'argent jusqu\'à une limite définie.</string>
+    <string name="TouchIdSettings.label">Utilisez votre empreinte digitale pour débloquer votre GRS et envoyer de l\'argent jusqu\'à une limite définie.</string>
     <!-- Link Text (see TouchIdSettings.customizeText) -->
     <string name="TouchIdSettings.linkText">Écran de plafond de dépenses Touch ID</string>
     <!-- Spending Limit: b100,000 ($100) -->
     <string name="TouchIdSettings.spendingLimit">Limite de dépenses : %1$s (%2$s)</string>
     <!-- Touch id switch label. -->
-    <string name="TouchIdSettings.switchLabel">Activer Touch ID pour BRD</string>
+    <string name="TouchIdSettings.switchLabel">Activer Touch ID pour GRS</string>
     <!-- Enable fingerprint for this wallet called Bread -->
     <string name="TouchIdSettings.switchLabel.android">Activer l\'identification par empreinte digitale</string>
     <!-- Touch ID settings view title -->
@@ -1004,8 +1004,8 @@
     <string name="TouchIdSettings.unavailableAlertMessage">Vous n\'avez pas configuré Touch ID sur cet appareil. Accédez à Paramètres -&gt; Touch ID et mot de passe pour le configurer maintenant.</string>
     <!-- Touch ID unavailable alert title -->
     <string name="TouchIdSettings.unavailableAlertTitle">Touch ID non configuré</string>
-    <!-- Text label for the toggle that enables Touch ID for unlocking the BRD app. -->
-    <string name="TouchIdSettings.unlockTitleText">Activez Touch ID pour déverrouiller BRD</string>
+    <!-- Text label for the toggle that enables Touch ID for unlocking the GRS app. -->
+    <string name="TouchIdSettings.unlockTitleText">Activez Touch ID pour déverrouiller GRS</string>
     <!-- Always require passcode option -->
     <string name="TouchIdSpendingLimit">Toujours demander un code d\'accès</string>
     <!-- Touch ID spending limit screen body -->
@@ -1046,7 +1046,7 @@
     <string name="Transaction.sentTo">envoyé à %1$s</string>
     <!-- eg. Starting balance: $50.00 -->
     <string name="Transaction.starting">Solde initial : %1$s</string>
-    <!-- e.g. "[The money you paid was a] Fee for token transfer: BRD" (BRD is the token that was transfered) -->
+    <!-- e.g. "[The money you paid was a] Fee for token transfer: GRS" (GRS is the token that was transfered) -->
     <string name="Transaction.tokenTransfer">Frais de transfert du jeton : %1$s</string>
     <!-- Waiting to be confirmed string -->
     <string name="Transaction.waiting">En attente d\'être confirmé. Certains marchands exigent une confirmation pour mener à bien une transaction. Temps estimé : 1-2 heures.</string>
@@ -1162,7 +1162,7 @@
     <!-- Instruction to touch the sensor for fingerprint authentication -->
     <string name="UnlockScreen.touchIdInstructions.android">Appuyez sur le capteur</string>
     <!-- TouchID prompt text -->
-    <string name="UnlockScreen.touchIdPrompt">Déverrouillez votre BRD.</string>
+    <string name="UnlockScreen.touchIdPrompt">Déverrouillez votre GRS.</string>
     <!-- Device authentication body -->
     <string name="UnlockScreen.touchIdPrompt.android">Veuillez déverrouiller votre appareil Android pour continuer.</string>
     <!-- Unlock with TouchID accessibility label -->
@@ -1172,7 +1172,7 @@
     <!-- Update PIN caption text -->
     <string name="UpdatePin.caption">Souvenez-vous de ce code PIN. Si vous l\'oubliez, vous ne pourrez pas accéder à votre bitcoin.</string>
     <!-- PIN creation info. -->
-    <string name="UpdatePin.createInstruction">Votre PIN sera utilisé pour débloquer votre BRD et envoyer de l\'argent.</string>
+    <string name="UpdatePin.createInstruction">Votre PIN sera utilisé pour débloquer votre GRS et envoyer de l\'argent.</string>
     <!-- Update PIN title -->
     <string name="UpdatePin.createTitle">Définir PIN</string>
     <!-- Update PIN title -->
@@ -1223,7 +1223,7 @@
     <!-- Wallet connection settings view title -->
     <string name="WalletConnectionSettings.viewTitle">Fastsync</string>
     <!-- 'No wallet' warning for watch app -->
-    <string name="Watch.noWalletWarning">Ouvrez l\'application BRD de l\'iPhone pour configurer votre portefeuille.</string>
+    <string name="Watch.noWalletWarning">Ouvrez l\'application GRS de l\'iPhone pour configurer votre portefeuille.</string>
     <!-- Dismiss button label -->
     <string name="Webview.dismiss">Ignorer</string>
     <!-- Webview loading error message -->
@@ -1231,9 +1231,9 @@
     <!-- Updating webview message -->
     <string name="Webview.updating">Mise à jour...</string>
     <!-- Welcome screen text. (?) will be replaced with the help icon users should look for. -->
-    <string name="Welcome.body">Breadwallet revient sous le nom de BRD, avec un nouveau design et de nouvelles fonctionnalités. \n\nSi vous avez besoin d\'aide, cliquez sur le (?) en haut à droite de la plupart des écrans.</string>
+    <string name="Welcome.body">Breadwallet revient sous le nom de GRS, avec un nouveau design et de nouvelles fonctionnalités. \n\nSi vous avez besoin d\'aide, cliquez sur le (?) en haut à droite de la plupart des écrans.</string>
     <!-- Top title of welcome screen -->
-    <string name="Welcome.title">Bienvenue chez BRD!</string>
+    <string name="Welcome.title">Bienvenue chez GRS!</string>
     <!-- Wipe wallet alert message -->
     <string name="WipeWallet.alertMessage">Souhaitez-vous vraiment supprimer ce portefeuille ?</string>
     <!-- Wipe wallet alert title -->
@@ -1245,7 +1245,7 @@
     <!-- Enter phrase to wipe wallet instruction. (Important to explain it is the CURRENT [this wallet's] paper key that needs to be entered). -->
     <string name="WipeWallet.instruction">Pour commencer un nouveau portefeuille ou rétablir un portefeuille existant, vous devez d\'abord supprimer le portefeuille actuellement installé. Pour continuer, saisissez la Clé Papier du portefeuille actuel.</string>
     <!-- Instructions for unlinking the wallet -->
-    <string name="WipeWallet.startMessage">Démarrer ou récupérer un autre portefeuille vous permet d\'accéder et de gérer un portefeuille BRD différent sur cet appareil.</string>
+    <string name="WipeWallet.startMessage">Démarrer ou récupérer un autre portefeuille vous permet d\'accéder et de gérer un portefeuille GRS différent sur cet appareil.</string>
     <!-- Start wipe wallet view warning -->
     <string name="WipeWallet.startWarning">Vous ne pourrez plus accéder à votre portefeuille courant depuis cet appareil. Si vous souhaitez le récupérer plus tard, vous devrais réentrer la clé papier.</string>
     <!-- Unlink this wallet from this device. -->
