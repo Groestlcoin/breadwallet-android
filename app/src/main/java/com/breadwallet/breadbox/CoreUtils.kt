@@ -304,7 +304,7 @@ val Wallet.urlScheme: String?
     get() = when {
         currency.code.isEthereum() || currency.isErc20() -> "ethereum"
         currency.code.isRipple() -> "xrp"
-        currency.code.isBitcoin() -> "bitcoin"
+        currency.code.isBitcoin() -> "groestlcoin"
         currency.code.isBitcoinCash() -> when {
             BuildConfig.BITCOIN_TESTNET -> "bchtest"
             else -> "bitcoincash"

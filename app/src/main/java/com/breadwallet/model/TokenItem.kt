@@ -49,7 +49,7 @@ data class TokenItem(
         get() = when {
             symbol.isEthereum() || type == "erc20" -> "ethereum"
             symbol.isRipple() -> "xrp"
-            symbol.isBitcoin() -> "bitcoin"
+            symbol.isBitcoin() -> "groestlcoin"
             symbol.isBitcoinCash() -> when {
                 BuildConfig.BITCOIN_TESTNET -> "bchtest"
                 else -> "bitcoincash"
