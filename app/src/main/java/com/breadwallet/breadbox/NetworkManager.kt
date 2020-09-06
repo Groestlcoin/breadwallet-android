@@ -294,6 +294,7 @@ class NetworkManager(
 }
 
 private fun Network.getManagerMode(preferredMode: WalletManagerMode?): WalletManagerMode = when {
+    currency.isBitcoin() -> WalletManagerMode.P2P_ONLY
     currency.isBitcoinCash() -> WalletManagerMode.API_ONLY
     preferredMode == null -> defaultWalletManagerMode
     supportsWalletManagerMode(preferredMode) -> preferredMode
