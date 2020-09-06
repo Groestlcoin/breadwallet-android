@@ -89,7 +89,7 @@ android {
         brd {
             applicationId = "org.groestlcoin.breadwallet"
             dimension "mode"
-            resValue "string", "app_name", "BRD"
+            resValue "string", "app_name", "GRS"
             buildConfigField "boolean", "BITCOIN_TESTNET", "false"
             // Uncomment to fake sign a mainnet release build for testing.
             missingDimensionStrategy 'network', 'onMainnet'
@@ -97,7 +97,7 @@ android {
         brdTestnet {
             applicationId = "org.groestlcoin.breadwallet.testnet"
             dimension "mode"
-            resValue "string", "app_name", "BRD Testnet"
+            resValue "string", "app_name", "GRS Testnet"
             buildConfigField "boolean", "BITCOIN_TESTNET", "true"
             missingDimensionStrategy 'network', 'onTestnet'
         }
