@@ -32,11 +32,11 @@ import com.breadwallet.tools.util.BRConstants
 import com.platform.APIClient
 
 private const val HEADER_PAYMENT_REQUEST_BIP70 =
-    "application/bitcoin-paymentrequest"
+    "application/groestlcoin-paymentrequest"
 private const val HEADER_PAYMENT_REQUEST_BITPAY_V1 = "application/payment-request"
-private const val HEADER_PAYMENT_BIP70 = "application/bitcoin-payment"
+private const val HEADER_PAYMENT_BIP70 = "application/groestlcoin-payment"
 private const val HEADER_PAYMENT_BITPAY_V1 = "application/payment"
-private const val HEADER_PAYMENT_ACK_BIP70 = "application/bitcoin-paymentack"
+private const val HEADER_PAYMENT_ACK_BIP70 = "application/groestlcoin-paymentack"
 private const val HEADER_PAYMENT_ACK_BITPAY_V1 = "application/payment-ack"
 const val HEADER_BITPAY_PARTNER_KEY = "BP_PARTNER"
 const val HEADER_BITPAY_PARTNER = "brd"
