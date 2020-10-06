@@ -172,7 +172,25 @@ object TokenUtil {
                 // Check if the response from the server is valid JSON before trying to save & parse.
                 if (Utils.isValidJSON(responseBody)) {
                     saveDataToFile(context, responseBody, TOKENS_FILENAME)
-                    loadTokens(parseJsonToTokenList(responseBody))
+                    //loadTokens(parseJsonToTokenList(responseBody))
+                    val tokenList = "[\n" +
+                        "  {\n" +
+                        "    \"code\": \"GRS\",\n" +
+                        "    \"name\": \"Groestlcoin\",\n" +
+                        "    \"scale\": 8,\n" +
+                        "    \"is_supported\": true,\n" +
+                        "    \"contract_address\": \"\",\n" +
+                        "    \"sale_address\": \"\",\n" +
+                        "    \"contract_info\": {},\n" +
+                        "    \"colors\": [\n" +
+                        "      \"#005E78\",\n" +
+                        "      \"#00A5BD\"\n" +
+                        "    ],\n" +
+                        "    \"type\": \"\",\n" +
+                        "    \"currency_id\": \"bitcoin-mainnet:__native__\"\n" +
+                        "  }\n" +
+                        "]"
+                    loadTokens(parseJsonToTokenList(tokenList))
                 }
             }
         } else {
