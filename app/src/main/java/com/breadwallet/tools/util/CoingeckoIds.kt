@@ -77,6 +77,7 @@ val coingeckoIdMap = mapOf(
     "GBX" to "globitex",
     "GNO" to "gnosis",
     "GNT" to "golem",
+    "GRS" to "groestlcoin",
     "GNX" to "genaro-network",
     "GTO" to "gifto",
     "GUP" to "matchpool",
