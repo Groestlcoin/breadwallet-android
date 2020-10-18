@@ -26,7 +26,7 @@ package com.breadwallet.tools.util
 
 import java.math.RoundingMode
 
-const val btc = "btc"
+const val btc = "grs"
 const val eth = "eth"
 const val bch = "bch"
 const val hbar = "hbar"
@@ -78,10 +78,10 @@ object BRConstants {
 
     @Deprecated("")
     val CURRENT_UNIT_BITCOINS = 2
-    const val BITS_SYMBOL = "\u0180"
+    const val BITS_SYMBOL = "ǥ"
     const val ETH_SYMBOL = "\u039E"
     const val BITCOIN_SYBMOL_OLD = "\u0243"
-    const val BITCOIN_SYMBOL = "\u20BF"
+    const val BITCOIN_SYMBOL = "Ǥ"
     @JvmField
     val ROUNDING_MODE = RoundingMode.HALF_EVEN
     const val WRITE_AHEAD_LOGGING = true
@@ -135,7 +135,7 @@ object BRConstants {
     /**
      * Social media links and privacy policy URLS
      */
-    const val URL_PRIVACY_POLICY = "https://brd.com/privacy"
+    const val URL_PRIVACY_POLICY = "https://github.com/Groestlcoin/groestlwallet-android/wiki/PrivacyPolicy"
     const val URL_TWITTER = "https://twitter.com/brdhq"
     const val URL_REDDIT = "https://www.reddit.com/r/BRDapp/"
     const val URL_BLOG = "https://brd.com/blog/"
