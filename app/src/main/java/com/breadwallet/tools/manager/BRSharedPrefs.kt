@@ -347,7 +347,7 @@ object BRSharedPrefs {
         brdPrefs.edit { putBoolean(EMAIL_OPT_IN_DISMISSED, dismissed) }
 
     fun getEmailOptInDismissed(): Boolean =
-        brdPrefs.getBoolean(EMAIL_OPT_IN_DISMISSED, false)
+        true
 
     /**
      * Get the debug bundle from shared preferences or empty if not available.
