@@ -459,9 +459,9 @@
     <!-- Onboarding screen Skip button title that allows the user to exit the onboarding process. -->
     <string name="Onboarding.skip">Skip</string>
     <!-- Onboarding screen Page 4 title -->
-    <string name="OnboardingPageFour.title">Start investing today with as little as $50!</string>
+    <string name="OnboardingPageFour.title">Please wait...</string>
     <!-- Onboarding screen Page 1 title -->
-    <string name="OnboardingPageOne.title">Welcome to your new digital asset wallet!</string>
+    <string name="OnboardingPageOne.title">Welcome to your new Groestlcoin wallet!</string>
     <!-- Onboarding screen Page 3 subtitle -->
     <string name="OnboardingPageThree.subtitle">Invest and diversify with GRS, easily and securely.</string>
     <!-- Onboarding screen Page 3 title -->
