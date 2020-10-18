@@ -130,10 +130,14 @@
             android:layout_width="@dimen/faq_dimen"
             android:layout_height="@dimen/faq_dimen"
             android:layout_alignParentEnd="true"
-            android:layout_margin="@dimen/bread_margin"
+            android:layout_marginStart="@dimen/bread_margin"
+            android:layout_marginTop="@dimen/bread_margin"
+            android:layout_marginEnd="@dimen/bread_margin"
+            android:layout_marginBottom="@dimen/bread_margin"
             android:background="?attr/faq_button_primary_color"
+            android:visibility="gone"
             tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="81dp"/>
+            tools:layout_editor_absoluteY="81dp" />
 
         <ImageView
             android:id="@+id/imageView9"
