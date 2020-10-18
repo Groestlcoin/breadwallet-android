@@ -192,28 +192,28 @@ class SettingsScreenHandler(
                 SettingsOption.SECURITY_SETTINGS,
                 R.drawable.ic_security_settings
             ),
-            SettingsItem(
+            /*SettingsItem(
                 context.getString(R.string.MenuButton_support),
                 SettingsOption.SUPPORT,
                 R.drawable.ic_support
-            ),
-            SettingsItem(
+            ),*/
+            /*SettingsItem(
                 context.getString(R.string.Settings_review),
                 SettingsOption.SUBMIT_REVIEW,
                 R.drawable.ic_review
-            ),
-            SettingsItem(
+            ),*/
+            /*SettingsItem(
                 context.getString(R.string.Settings_rewards),
                 SettingsOption.REWARDS,
                 R.drawable.ic_reward
-            ),
+            ),*/
             SettingsItem(
                 context.getString(R.string.Settings_about),
                 SettingsOption.ABOUT,
                 R.drawable.ic_about
             )
         ).apply {
-            if (experimentsRepository.isExperimentActive(Experiments.ATM_MAP)) {
+            /*if (experimentsRepository.isExperimentActive(Experiments.ATM_MAP)) {
                 add(
                     SettingsItem(
                         context.getString(R.string.Settings_atmMapMenuItemTitle),
@@ -222,7 +222,7 @@ class SettingsScreenHandler(
                         subHeader = context.getString(R.string.Settings_atmMapMenuItemSubtitle)
                     )
                 )
-            }
+            }*/
             if (BuildConfig.DEBUG) {
                 add(
                     SettingsItem(
@@ -244,10 +244,10 @@ class SettingsScreenHandler(
             "Groestlcoin ${context.getString(R.string.Settings_title)}", // TODO move Bitcoin to a constant
             SettingsOption.BTC_MENU
         ),
-        SettingsItem(
+        /*SettingsItem(
             "Bitcoin Cash ${context.getString(R.string.Settings_title)}", // TODO move Bitcoin Cash to a constant
             SettingsOption.BCH_MENU
-        ),
+        ),*/
         SettingsItem(
             context.getString(R.string.Prompts_ShareData_title),
             SettingsOption.SHARE_ANONYMOUS_DATA
@@ -348,10 +348,10 @@ class SettingsScreenHandler(
 
     private val btcOptions: List<SettingsItem> =
         mutableListOf(
-            SettingsItem(
+            /*SettingsItem(
                 context.getString(R.string.WalletConnectionSettings_menuTitle),
                 SettingsOption.FAST_SYNC_BTC
-            ),
+            ),*/
             SettingsItem(
                 context.getString(R.string.Settings_importTitle),
                 SettingsOption.REDEEM_PRIVATE_KEY
