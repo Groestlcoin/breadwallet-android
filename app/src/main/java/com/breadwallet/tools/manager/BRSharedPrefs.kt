@@ -329,7 +329,7 @@ object BRSharedPrefs {
         brdPrefs.edit { putBoolean(SEGWIT, isEnabled) }
 
     fun getIsSegwitEnabled(): Boolean =
-        brdPrefs.getBoolean(SEGWIT, false)
+        true//brdPrefs.getBoolean(SEGWIT, false)
 
     fun putEmailOptIn(hasOpted: Boolean) =
         brdPrefs.edit { putBoolean(EMAIL_OPT_IN, hasOpted) }
