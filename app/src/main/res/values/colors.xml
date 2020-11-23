@@ -40,8 +40,8 @@
     <color name="text_secondary">#bfffffff</color>
     <color name="action_icon_background">#312F4C</color>
 
-    <item name="logo_gradient_start" type="color">#F8A445</item>
-    <item name="logo_gradient_end" type="color">#fc5394</item>
+    <item name="logo_gradient_start" type="color">#00A5BD</item>
+    <item name="logo_gradient_end" type="color">#005E78</item>
 
     <item name="finger_gradient_start" type="color">#9c7ee2</item>
     <item name="finger_gradient_end" type="color">#7F52E6</item>
@@ -62,7 +62,7 @@
     <item name="pin_pad_text" type="color">#141233</item>
     <item name="extra_light_blue_background" type="color">#f2f2f2</item>
 
-    <item name="button_primary_normal" type="color">#29ABE2</item>
+    <item name="button_primary_normal" type="color">#00A5BD</item>
     <item name="button_secondary" type="color">#F5F8FA</item>
     <item name="button_secondary_text" type="color">#232426</item>
     <item name="confirmation_box" type="color">#141233</item>
