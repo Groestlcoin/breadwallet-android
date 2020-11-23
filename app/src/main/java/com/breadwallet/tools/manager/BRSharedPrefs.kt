@@ -267,14 +267,14 @@ object BRSharedPrefs {
 
     @JvmStatic
     fun getShowNotification(): Boolean =
-        brdPrefs.getBoolean(SHOW_NOTIFICATION, true)
+        false//brdPrefs.getBoolean(SHOW_NOTIFICATION, true)
 
     @JvmStatic
     fun putShowNotification(show: Boolean) =
         brdPrefs.edit { putBoolean(SHOW_NOTIFICATION, show) }
 
     fun getShareData(): Boolean =
-        brdPrefs.getBoolean(SHARE_DATA, true)
+        false//brdPrefs.getBoolean(SHARE_DATA, true)
 
     fun putShareData(show: Boolean) =
         brdPrefs.edit { putBoolean(SHARE_DATA, show) }

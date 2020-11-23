@@ -248,18 +248,18 @@ class SettingsScreenHandler(
             "Bitcoin Cash ${context.getString(R.string.Settings_title)}", // TODO move Bitcoin Cash to a constant
             SettingsOption.BCH_MENU
         ),*/
-        SettingsItem(
+        /*SettingsItem(
             context.getString(R.string.Prompts_ShareData_title),
             SettingsOption.SHARE_ANONYMOUS_DATA
-        ),
+        ),*/
         SettingsItem(
             context.getString(R.string.Settings_resetCurrencies),
             SettingsOption.RESET_DEFAULT_CURRENCIES
-        ),
+        )/*,
         SettingsItem(
             context.getString(R.string.Settings_notifications),
             SettingsOption.NOTIFICATIONS
-        )
+        )*/
     )
 
     private fun securitySettings(): List<SettingsItem> {
