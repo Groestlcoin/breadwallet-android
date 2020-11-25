@@ -260,6 +260,7 @@
             android:lineSpacingMultiplier="1.3"
             android:textColor="@color/light_gray"
             android:textSize="@dimen/paragraph"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hedera_memo_value"

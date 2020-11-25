@@ -94,6 +94,7 @@
             android:layout_marginEnd="@dimen/bread_margin"
             android:layout_marginBottom="@dimen/bread_margin"
             android:background="@drawable/faq_question_black"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/labelTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"

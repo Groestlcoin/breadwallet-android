@@ -170,7 +170,7 @@ object SendSheet {
         val isFeeNative: Boolean = currencyCode.equals(feeCurrencyCode, true)
 
         /** True when the user can select the [TransferSpeed], currently only BTC. */
-        val showFeeSelect: Boolean = currencyCode.isBitcoin()
+        val showFeeSelect: Boolean = false//currencyCode.isBitcoin()
 
         /** The total cost of this transaction in [currencyCode]. */
         val totalCost: BigDecimal = when {
