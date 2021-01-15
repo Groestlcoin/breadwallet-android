@@ -171,9 +171,10 @@ object TokenUtil {
 
                 // Check if the response from the server is valid JSON before trying to save & parse.
                 if (Utils.isValidJSON(responseBody)) {
-                    saveDataToFile(context, responseBody, TOKENS_FILENAME)
+                    //saveDataToFile(context, responseBody, TOKENS_FILENAME)
                     //loadTokens(parseJsonToTokenList(responseBody))
-                    val tokenList = "[\n" +
+                    val tokenList = if (!BuildConfig.BITCOIN_TESTNET)
+                        "[\n" +
                         "  {\n" +
                         "    \"code\": \"GRS\",\n" +
                         "    \"name\": \"Groestlcoin\",\n" +
@@ -190,6 +191,25 @@ object TokenUtil {
                         "    \"currency_id\": \"bitcoin-mainnet:__native__\"\n" +
                         "  }\n" +
                         "]"
+                    else
+                        "[\n" +
+                        "  {\n" +
+                        "    \"code\": \"GRS\",\n" +
+                        "    \"name\": \"Groestlcoin\",\n" +
+                        "    \"scale\": 8,\n" +
+                        "    \"is_supported\": true,\n" +
+                        "    \"contract_address\": \"\",\n" +
+                        "    \"sale_address\": \"\",\n" +
+                        "    \"contract_info\": {},\n" +
+                        "    \"colors\": [\n" +
+                        "      \"#505E78\",\n" +
+                        "      \"#50A5BD\"\n" +
+                        "    ],\n" +
+                        "    \"type\": \"\",\n" +
+                        "    \"currency_id\": \"bitcoin-testnet:__native__\"\n" +
+                        "  }\n" +
+                        "]"
+                    saveDataToFile(context, tokenList, TOKENS_FILENAME)
                     loadTokens(parseJsonToTokenList(tokenList))
                 }
             }
