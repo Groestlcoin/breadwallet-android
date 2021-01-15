@@ -6,7 +6,6 @@
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="8dp"
-    android:background="@drawable/add_wallet_item_background"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
@@ -21,6 +20,7 @@
         android:textColor="@color/white"
         android:layout_marginBottom="16dp"
         android:textSize="16sp"
-        android:fontFamily="@font/mobile_font_book" />
+        android:fontFamily="@font/mobile_font_book"
+        android:visibility="gone"/>
 
 </RelativeLayout>

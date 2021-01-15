@@ -29,7 +29,8 @@
                 android:text="@string/SelectAlertCrypto.title"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:fontFamily="@font/mobile_font_bold" />
+                android:fontFamily="@font/mobile_font_bold"
+                android:visibility="gone"/>
 
 
         </RelativeLayout>
