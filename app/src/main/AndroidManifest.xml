@@ -48,6 +48,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Dark"
         android:windowSoftInputMode="stateVisible|adjustResize">
+        <meta-data android:name="firebase_analytics_collection_deactivated"
+            android:value="true"/>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}"
@@ -60,7 +62,7 @@
 
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
-            android:value="true" />
+            android:value="false" />
 
         <activity
             android:name=".ui.MainActivity"
