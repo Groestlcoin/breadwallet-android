@@ -58,7 +58,13 @@ data class WalletInfoData(
 
         private fun getConnectionModes(json: JSONObject): Map<String, WalletManagerMode> {
             val mutableModes = mutableMapOf<String, WalletManagerMode>()
-            val modes = json.optJSONArray(CONNECTION_MODES) ?: return mutableModes.toMap()
+            val defaultConnectionModes = hashMapOf(
+                "bitcoin-mainnet:__native__" to WalletManagerMode.P2P_ONLY,
+                "bitcoin-testnet:__native__" to WalletManagerMode.P2P_ONLY
+            )
+            val modes = json.optJSONArray(CONNECTION_MODES) ?: return defaultConnectionModes
+            if (modes.length() == 0)
+                return defaultConnectionModes
             try {
                 var currencyId = ""
                 for (i in 0 until modes.length()) {
