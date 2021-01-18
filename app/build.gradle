@@ -40,7 +40,7 @@ android {
         brdMarketingVersion = 4   // Major version. Usually affected by marketing. Maximum value: 99
         brdProductVersion = 4    // Minor version. Usually affected by product. Maximum value: 99
         brdEngineeringVersion = 3 // Hot fix version. Usually affected by engineering. Maximum value: 9
-        brdBuildVersion = 1       // Build version. Increase for each new build. Maximum value: 999
+        brdBuildVersion = 4       // Build version. Increase for each new build. Maximum value: 999
 
         // The version code must be monotonically increasing. It is used by Android to maintain upgrade/downgrade
         // relationship between builds with a max value of 2 100 000 000.
@@ -52,7 +52,7 @@ android {
         brdInternalVersionName = "$brdMarketingVersion.$brdProductVersion.$ext.brdEngineeringVersion.$ext.brdBuildVersion"
     }
     defaultConfig {
-        applicationId = 'hashengineering.groestlcoin.grsbrd'
+        applicationId = 'org.groestlcoin.groestlwallet'
         minSdkVersion 23
         targetSdkVersion 29
 
@@ -87,7 +87,7 @@ android {
     flavorDimensions "mode"
     productFlavors {
         brd {
-            applicationId = "org.groestlcoin.breadwallet"
+            applicationId = "org.groestlcoin.groestlwallet"
             dimension "mode"
             resValue "string", "app_name", "GRS"
             buildConfigField "boolean", "BITCOIN_TESTNET", "false"
@@ -95,7 +95,7 @@ android {
             missingDimensionStrategy 'network', 'onMainnet'
         }
         brdTestnet {
-            applicationId = "org.groestlcoin.breadwallet.testnet"
+            applicationId = "org.groestlcoin.groestlwallet.testnet"
             dimension "mode"
             resValue "string", "app_name", "GRS Testnet"
             buildConfigField "boolean", "BITCOIN_TESTNET", "true"
