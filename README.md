@@ -1,23 +1,23 @@
-![ƀ](/images/icon.png) breadwallet for Android
+![ƀ](/images/icon.png) GRS for Android
 ----------------------------------
 
-[![Get it on Google Play](/images/icon-google-play.png)](https://play.google.com/store/apps/details?id=com.breadwallet)
+[![Get it on Google Play](/images/icon-google-play.png)](https://play.google.com/store/apps/details?id=org.groestlcoin.groestlwallet)
 
-### bitcoin done right
+### Groestlcoin done right
 
-This is the Android port of the breadwallet iOS app, which can be found [here](https://github.com/breadwallet/breadwallet/).
+This is the Android port of the GRS iOS app, which can be found [here](https://github.com/Groestlcoin/groestlwallet/).
 
-### a completely standalone bitcoin wallet
+### a completely standalone Groestlcoin wallet
 
-Unlike many other bitcoin wallets, breadwallet is a real standalone bitcoin client. There is no server to get hacked or go down, so you can always access your money. Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, breadwallet connects directly to the bitcoin network with the fast performance you need on a mobile device.
+Unlike many other Groestlcoin wallets, GRS is a real standalone Groestlcoin client. There is no server to get hacked or go down, so you can always access your money. Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, breadwallet connects directly to the Groestlcoin network with the fast performance you need on a mobile device.
 
 ### the next step in wallet security
 
-breadwallet is designed to protect you from malware, browser security holes, *even physical theft*. With AES hardware encryption, app sandboxing, and verified boot, breadwallet represents a significant security advance over web and desktop wallets.
+GRS is designed to protect you from malware, browser security holes, *even physical theft*. With AES hardware encryption, app sandboxing, and verified boot, breadwallet represents a significant security advance over web and desktop wallets.
 
 ### beautiful simplicity
 
-Simplicity is breadwallet's core design principle. A simple backup phrase is all you need to restore your wallet on another device if yours is ever lost or broken.  Because breadwallet is  [deterministic](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), your balance and transaction history can be recovered from just your backup phrase.
+Simplicity is GRS's core design principle. A simple backup phrase is all you need to restore your wallet on another device if yours is ever lost or broken.  Because breadwallet is  [deterministic](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), your balance and transaction history can be recovered from just your backup phrase.
 
 ## features
 
@@ -30,8 +30,8 @@ Simplicity is breadwallet's core design principle. A simple backup phrase is all
 
 ## Development setup
 
-1. Clone the repo: `git clone git@github.com:breadwallet/breadwallet-android.git`
-2. Open `breadwallet-android` in [IntelliJ IDEA](https://www.jetbrains.com/idea/download/) or [Android Studio](https://developer.android.com/studio)
+1. Clone the repo: `git clone git@github.com:Groestlcoin/groestlwallet-android.git`
+2. Open `groestlwallet-android` in [IntelliJ IDEA](https://www.jetbrains.com/idea/download/) or [Android Studio](https://developer.android.com/studio)
 3. Click Build > Build Project
 
 ## Advanced setup
