@@ -4249,6 +4249,7 @@
                <also-trust value="29bde7024fae45784d4b6faebfbf9e1a555de6bc4abc4c48eeed3dd4b460ed1f"/>
                <also-trust value="a6a69d979f32738091cdc4b6a745c37443bc20581f4c8ccbdc868a38673d29d7"/>
                <also-trust value="39aaf6e7475833618589edf28c2d8c1da75e3d231ea4a48d8fd05f9172790a59"/>
+               <also-trust value="f82568e9916bc23d4a161c041537a55ed67d5d9db6401bf7d1e2bb0c3bbfa91a"/>
             </sha256>
          </artifact>
          <artifact name="corenative-android-6.2.0.module">
